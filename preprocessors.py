@@ -60,7 +60,8 @@ class DataPreprocesser:
 
         # this should be done very differently: create 0-1 matrix of definitions
         self.df_tally = self.df_tally.replace(np.nan, 0)
-        self.df_tally = self.df_tally.replace(["extra", "mut", "shared"], 1)
+#         self.df_tally = self
+        self.df_tally = self.df_tally.replace(["extra", "mut", "shared", "revert", "subset"], 1)
 
         # make complement of mutation signatures for undetermined cases
         self.df_tally.insert(self.df_tally.columns.size - 1, "undetermined", 0)

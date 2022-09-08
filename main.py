@@ -13,9 +13,9 @@ from tqdm.notebook import tqdm, trange
 
 
 # temporary, globals
-tally_data = "/Users/gneiss/Documents/School/CBG2/brexit/TSmodelling/WWdeconvolution/Dev/data/tallymut_line.tsv"
+tally_data = "./tallymut_line.tsv"
 out_dir = (
-    "/Users/gneiss/Documents/School/CBG2/brexit/TSmodelling/WWdeconvolution/Dev/out"
+    "./out"
 )
 variants_list = [
     "B.1.1.7",
@@ -25,6 +25,8 @@ variants_list = [
     "B.1.617.1",
     "BA.1",
     "BA.2",
+    "BA.4",
+    "BA.5"
 ]
 variants_pangolin = {
     "al": "B.1.1.7",
