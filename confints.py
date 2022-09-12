@@ -90,3 +90,13 @@ class WaldConfint:
 
         elif self.scale == "logit":
             se = self.logit_standard_error(X, coefs)
+
+            fitted_pseudo = coefs + self.pseudofrac
+            fitted_pseudo = fitted_pseudo / np.sum(fitted_pseudo)
+            logit_fitted_pseudo = np.log(fitted_pseudo) - np.log(1-fitted_pseudo)
+            return {
+                "lower": logit_fitted_pseudo - norm.ppf(1 - (1 - self.level) / 2) * se,
+                "upper": logit_fitted_pseudo + norm.ppf(1 - (1 - self.level) / 2) * se,
+            }
+
+
