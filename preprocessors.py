@@ -34,7 +34,7 @@ class DataPreprocesser:
         # rename columns
         self.df_tally = self.df_tally.rename(columns=variants_pangolin)
         # drop non reported variants
-        self.df_tally = self.df_tally.drop(variants_not_reported, axis=1)
+        self.df_tally = self.df_tally.drop(variants_not_reported, axis=1, errors="ignore")
         # drop rows without estimated frac or date
         self.df_tally.dropna(subset=["frac", "date"], inplace=True)
         # create column with mutation signature
@@ -62,6 +62,9 @@ class DataPreprocesser:
         self.df_tally = self.df_tally.replace(np.nan, 0)
 #         self.df_tally = self
         self.df_tally = self.df_tally.replace(["extra", "mut", "shared", "revert", "subset"], 1)
+
+        # remove uninformative mutations
+        self.df_tally = self.df_tally[~self.df_tally[variants_list].sum(axis=1).isin([0, len(variants_list)])]
 
         # make complement of mutation signatures for undetermined cases
         self.df_tally.insert(self.df_tally.columns.size - 1, "undetermined", 0)
