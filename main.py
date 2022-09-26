@@ -124,9 +124,11 @@ class KernelDeconv:
 
         # compute and return confint
         regfit.conf_band = self.confint.confint(
-            self.X.values[kvals.values >= min_tol, :]
+            X=self.X.values[kvals.values >= min_tol, :]
             * np.expand_dims(kvals.values[kvals.values >= min_tol], 1),
-            regfit.fitted,
+            coefs=regfit.fitted,
+            y=self.y.values.flatten()[kvals.values >= min_tol],
+            kvals=kvals.values[kvals.values >= min_tol]
         )
 
         return regfit
