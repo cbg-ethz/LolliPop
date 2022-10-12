@@ -132,9 +132,18 @@ class WaldConfint:
             fitted_pseudo = fitted_pseudo / np.sum(fitted_pseudo)
             logit_fitted_pseudo = np.log(fitted_pseudo) - np.log(1-fitted_pseudo)
             logit_fitted = np.log(coefs) - np.log(1-coefs)
+
+            lower = logit_fitted - norm.ppf(1 - (1 - self.level) / 2) * se
+            lower_pseudo = logit_fitted_pseudo - norm.ppf(1 - (1 - self.level) / 2) * se
+            lower_consensus = np.array([lower, lower_pseudo]).min(axis=0)
+
+            upper = logit_fitted + norm.ppf(1 - (1 - self.level) / 2) * se
+            upper_pseudo = logit_fitted_pseudo + norm.ppf(1 - (1 - self.level) / 2) * se
+            upper_consensus = np.array([upper, upper_pseudo]).max(axis=0)
+
             return {
-                "lower": logit_fitted_pseudo - norm.ppf(1 - (1 - self.level) / 2) * se,
-                "upper": logit_fitted_pseudo + norm.ppf(1 - (1 - self.level) / 2) * se,
+                "lower": lower_consensus,
+                "upper": upper_consensus,
             }
 
 
