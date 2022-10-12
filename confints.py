@@ -38,11 +38,11 @@ class WaldConfint:
         expected_var = y_hat * (1-y_hat)
 
         if self.method == "all":
-            return (
+            return np.sqrt((
                 (((y - y_hat)**2) / expected_var) *
                 kvals /
                 kvals.sum()
-            ).sum()
+            ).sum())
 
         elif self.method == "strat":
             mut_ind = (X[:,-1] == 0)
@@ -54,7 +54,7 @@ class WaldConfint:
             overdisp_agg = (np.expand_dims(overdisp_vals,1) * X[mut_ind,:]).sum(axis=0)  / norm
             overdisp_agg[-1] = overdisp_vals.sum() / kvals[mut_ind].sum()
             
-            return overdisp_agg
+            return np.sqrt(overdisp_agg)
 
 
     def standard_error(self, X, coefs):
