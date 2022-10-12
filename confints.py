@@ -8,7 +8,7 @@ class NullConfint:
     def __init__(self):
         pass
 
-    def confint(self, X, coefs):
+    def confint(self, X, coefs, y=None, kvals=None):
 
         return {
             "lower": coefs * np.nan,
