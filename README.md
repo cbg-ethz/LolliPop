@@ -1,2 +1,2 @@
-# WWdec
-Deconvolution for Wastewater Genomics
+# LolliPop
+LolliPop - a tool for Deconvolution for Wastewater Genomics
