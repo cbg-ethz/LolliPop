@@ -50,7 +50,7 @@ class WaldConfint:
                 (((y - y_hat)**2) / expected_var) *
                 kvals
             )[mut_ind]
-            norm = (np.expand_dims(kvals, 1) * X)[mut_ind,:].sum(axis=0)
+            norm = (np.expand_dims(kvals, 1) * X)[mut_ind,:].sum(axis=0) 
             overdisp_agg = (np.expand_dims(overdisp_vals,1) * X[mut_ind,:]).sum(axis=0)  / norm
             overdisp_agg[-1] = overdisp_vals.sum() / kvals[mut_ind].sum()
             
@@ -145,5 +145,23 @@ class WaldConfint:
                 "lower": lower_consensus,
                 "upper": upper_consensus,
             }
+
+def resample_mutations(df_city1, mutations):
+    """
+    Function to resample mutations by replacement (preserving mutation-complement pairs). 
+    Returns a copy of the DataFrame with <resample_value> column indicating how many times the mutation was in the resample.
+    """
+
+    # resample indices of mutations with replacement (warning: high is one above actual high!
+    rand_idcs = np.random.randint(0, high=int(len(mutations)/2), size=int(len(mutations)/2))
+    # for all mutations, count how many times they appear in the resample (0, 1, 2 ...)
+    resamples_counts = np.bincount(rand_idcs, minlength=int(len(mutations)/2))
+    # make a dict of {mutation : occurences in the resample} pairs
+    resample_coeff_dict = dict(zip(mutations, np.concatenate([resamples_counts, resamples_counts])))
+    # make a column with coefficients for how many times a row should be accounted for according to the resample
+    df_sampled = df_city1.copy()
+    df_sampled.loc[:,"resample_value"] = df_sampled.mutations.map(resample_coeff_dict)
+    
+    return df_sampled, rand_idcs
 
 
