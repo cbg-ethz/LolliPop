@@ -1,0 +1,302 @@
+position	reference	variant	gene	ka	ga	de	al	be	om1	om2	om4	om5	om2121	om275
+174	G	T		NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+210	G	T		mut	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+241	C	T		mut	mut	mut	mut	mut	shared	shared	shared	shared	shared	mut
+670	T	G	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+686	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+687	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+688	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+689	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+690	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+691	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+692	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+693	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+694	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+733	T	C	ORF1ab	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+913	C	T	ORF1ab	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+1059	C	T	ORF1ab	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+2749	C	T	ORF1ab	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+2790	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+2832	A	G	ORF1ab	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+3037	C	T	ORF1ab	mut	mut	mut	mut	mut	shared	shared	shared	shared	shared	mut
+3267	C	T	ORF1ab	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+3457	C	T	ORF1ab	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+3796	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+3828	C	T	ORF1ab	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+3927	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+4181	G	T	ORF1ab	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+4184	G	A	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+4321	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+4586	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+4965	C	T	ORF1ab	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+5183	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+5230	G	T	ORF1ab	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+5386	T	G	ORF1ab	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+5388	C	A	ORF1ab	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+5648	A	C	ORF1ab	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+5986	C	T	ORF1ab	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+6319	A	G	ORF1ab	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+6402	C	T	ORF1ab	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+6513	N	-	ORF1ab	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+6514	N	-	ORF1ab	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+6515	N	-	ORF1ab	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+6613	A	G	ORF1ab	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+6954	T	C	ORF1ab	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+7124	C	T	ORF1ab	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+8393	G	A	ORF1ab	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+8986	C	T	ORF1ab	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+9053	G	T	ORF1ab	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+9344	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+9424	A	G	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+9534	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+9866	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	shared	NA	NA	shared	mut
+10029	C	T	ORF1ab	NA	NA	mut	NA	NA	shared	shared	shared	shared	shared	mut
+10198	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+10323	A	G	ORF1ab	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+10447	G	A	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+10449	C	A	ORF1ab	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+11201	A	G	ORF1ab	mut	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+11288	N	-	ORF1ab	NA	mut	NA	mut	mut	mut	mut	shared	shared	shared	mut
+11289	N	-	ORF1ab	NA	mut	NA	mut	mut	mut	mut	shared	shared	shared	mut
+11290	N	-	ORF1ab	NA	mut	NA	mut	mut	mut	mut	shared	shared	shared	mut
+11291	N	-	ORF1ab	NA	mut	NA	mut	mut	mut	mut	shared	shared	shared	mut
+11292	N	-	ORF1ab	NA	mut	NA	mut	mut	mut	mut	shared	shared	shared	mut
+11293	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	NA
+11294	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	NA
+11295	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	NA
+11296	N	-	ORF1ab	NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	NA
+11332	A	G	ORF1ab	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+11537	A	G	ORF1ab	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+11674	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	NA	NA	NA	shared	NA
+12160	G	A	ORF1ab	NA	NA	NA	NA	NA	NA	NA	shared	shared	NA	NA
+12444	A	G	ORF1ab	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+12778	C	T	ORF1ab	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+12880	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+13195	T	C	ORF1ab	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+13860	C	T	ORF1ab	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+14408	C	T	ORF1ab	mut	mut	mut	mut	mut	shared	shared	shared	shared	shared	mut
+14676	C	T	ORF1ab	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+15009	T	C	ORF1ab	NA	NA	NA	NA	NA	NA	NA	NA	NA	shared	NA
+15240	C	T	ORF1ab	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+15279	C	T	ORF1ab	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+15451	G	A	ORF1ab	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	mut
+15714	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+16176	T	C	ORF1ab	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+16466	C	T	ORF1ab	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+17259	G	T	ORF1ab	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+17410	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+17523	G	T	ORF1ab	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+18163	A	G	ORF1ab	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+19220	C	T	ORF1ab	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+19955	C	T	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+20055	A	G	ORF1ab	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+20396	A	G	ORF1ab	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+21614	C	T	S	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+21618	C	G	S	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+21618	C	T	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+21621	C	A	S	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+21633	N	-	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+21634	N	-	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+21635	N	-	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+21636	N	-	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+21637	N	-	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+21638	C	T	S	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+21638	N	-	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+21639	N	-	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+21640	N	-	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+21641	N	-	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+21721	C	T	S	NA	NA	NA	NA	NA	NA	NA	NA	NA	shared	NA
+21762	C	T	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+21765	N	-	S	NA	NA	NA	mut	NA	mut	NA	mut	mut	NA	NA
+21766	N	-	S	NA	NA	NA	mut	NA	mut	NA	mut	mut	NA	NA
+21767	N	-	S	NA	NA	NA	mut	NA	mut	NA	mut	mut	NA	NA
+21768	N	-	S	NA	NA	NA	mut	NA	mut	NA	mut	mut	NA	NA
+21769	N	-	S	NA	NA	NA	mut	NA	mut	NA	mut	mut	NA	NA
+21770	N	-	S	NA	NA	NA	mut	NA	mut	NA	mut	mut	NA	NA
+21801	A	C	S	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+21846	C	T	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+21895	T	C	S	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+21974	G	T	S	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+21987	G	A	S	NA	NA	mut	NA	NA	NA	mut	shared	shared	shared	mut
+21987	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+21988	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+21989	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+21990	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+21991	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+21992	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+21993	N	-	S	NA	NA	NA	mut	NA	mut	NA	NA	NA	NA	NA
+21994	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+21995	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+21995	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+22001	A	G	S	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+22016	T	C	S	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+22022	G	A	S	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+22029	N	-	S	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+22030	N	-	S	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+22031	N	-	S	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+22032	N	-	S	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+22033	C	A	S	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+22033	N	-	S	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+22034	N	-	S	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+22132	G	T	S	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+22190	A	G	S	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+22194	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+22195	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+22196	N	-	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+22200	T	G	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+22206	A	G	S	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+22287	N	-	S	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+22288	N	-	S	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+22289	N	-	S	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+22331	G	A	S	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+22577	G	C	S	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+22578	G	A	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+22673	T	C	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+22674	C	T	S	NA	NA	NA	NA	NA	mut	mut	shared	shared	shared	mut
+22675	C	C	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+22679	T	C	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+22686	C	T	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+22688	A	G	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+22775	G	A	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+22786	A	C	S	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+22812	A	C	S	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+22813	G	T	S	NA	NA	NA	NA	mut	shared	shared	shared	shared	shared	mut
+22882	T	G	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+22898	G	A	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	mut
+22917	T	A	S	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut	NA
+22917	T	G	S	mut	NA	mut	NA	NA	NA	NA	mut	mut	NA	NA
+22942	T	G	S	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+22992	G	A	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+22995	C	A	S	NA	NA	mut	NA	NA	shared	shared	shared	shared	shared	mut
+23012	G	A	S	NA	mut	NA	NA	mut	NA	NA	NA	NA	NA	NA
+23012	G	C	S	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+23013	A	C	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+23018	T	G	S	NA	NA	NA	NA	NA	NA	NA	mut	mut	NA	NA
+23040	A	A	S	NA	NA	NA	NA	NA	NA	NA	revert	revert	NA	revert
+23040	A	G	S	NA	NA	NA	NA	NA	shared	shared	NA	NA	shared	NA
+23048	G	A	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+23055	A	G	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+23063	A	T	S	NA	mut	NA	mut	mut	shared	shared	shared	shared	shared	mut
+23075	T	C	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+23202	C	A	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+23271	C	A	S	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+23403	A	G	S	mut	mut	mut	mut	mut	shared	shared	shared	shared	shared	mut
+23525	C	T	S	NA	mut	NA	NA	NA	shared	shared	shared	shared	shared	mut
+23599	T	G	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+23604	C	A	S	NA	NA	NA	mut	NA	shared	shared	shared	shared	shared	mut
+23604	C	G	S	mut	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+23664	C	T	S	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+23673	C	T	S	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut	NA
+23709	C	T	S	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+23854	C	A	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+23948	G	T	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+24130	C	A	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+24410	G	A	S	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+24424	A	T	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+24469	T	A	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+24503	C	T	S	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+24506	T	G	S	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+24642	C	T	S	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+24775	A	T	S	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+24914	G	C	S	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+25000	C	T	S	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+25088	G	T	S	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+25416	C	T	ORF3a	NA	NA	NA	NA	NA	NA	NA	NA	NA	shared	mut
+25469	C	T	ORF3a	mut	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+25563	G	T	ORF3a	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+25584	C	T	ORF3a	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+25904	C	T	ORF3a	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+26060	C	T	ORF3a	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+26149	T	C	ORF3a	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+26270	C	T	E	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+26275	A	G	E	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	mut
+26456	C	T	E	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+26529	G	A	M	NA	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA
+26530	A	G	M	NA	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA
+26577	C	G	M	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+26709	G	A	M	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+26767	T	C	M	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+26858	C	C	M	NA	NA	NA	NA	NA	NA	NA	NA	revert	NA	NA
+26858	C	T	M	NA	NA	NA	NA	NA	NA	mut	shared	NA	shared	mut
+27259	A	A	ORF6	NA	NA	NA	NA	NA	NA	NA	NA	revert	NA	NA
+27259	A	C	ORF6	NA	NA	NA	NA	NA	shared	shared	shared	NA	shared	mut
+27382	G	C	ORF6	NA	NA	NA	NA	NA	NA	mut	shared	NA	shared	mut
+27382	G	G	ORF6	NA	NA	NA	NA	NA	NA	NA	NA	revert	NA	NA
+27383	A	A	ORF6	NA	NA	NA	NA	NA	NA	NA	NA	revert	NA	NA
+27383	A	T	ORF6	NA	NA	NA	NA	NA	NA	mut	shared	NA	shared	mut
+27384	T	C	ORF6	NA	NA	NA	NA	NA	NA	mut	shared	NA	shared	mut
+27384	T	T	ORF6	NA	NA	NA	NA	NA	NA	NA	NA	revert	NA	NA
+27638	T	C	ORF7a	mut	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+27752	C	T	ORF7a	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+27788	G	T	ORF7b	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+27807	C	T	ORF7b	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+27874	C	T	ORF7b	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+27889	C	T		NA	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA
+27972	C	T	ORF8	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+28048	G	T	ORF8	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+28111	A	G	ORF8	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+28167	G	A	ORF8	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+28248	N	-	ORF8	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+28249	N	-	ORF8	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+28250	N	-	ORF8	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+28251	N	-	ORF8	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+28252	N	-	ORF8	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+28253	C	T	ORF8	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+28253	N	-	ORF8	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+28271	A	T		NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28271	N	-		NA	NA	mut	mut	NA	NA	NA	NA	NA	NA	NA
+28280	G	C	N	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+28281	A	T	N	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+28282	T	A	N	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+28311	C	T	N	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28362	N	-	N	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28363	N	-	N	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28364	N	-	N	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28365	N	-	N	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28366	N	-	N	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28367	N	-	N	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28368	N	-	N	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28369	N	-	N	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28370	N	-	N	NA	NA	NA	NA	NA	shared	shared	shared	shared	shared	mut
+28461	A	G	N	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+28512	C	G	N	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+28724	C	T	N	NA	NA	NA	NA	NA	NA	NA	mut	NA	NA	NA
+28877	A	T	N	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+28878	G	C	N	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
+28881	G	A	N	NA	mut	NA	mut	NA	shared	shared	shared	shared	shared	mut
+28881	G	T	N	mut	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+28882	G	A	N	NA	mut	NA	mut	NA	shared	shared	shared	shared	shared	mut
+28883	G	C	N	NA	mut	NA	mut	NA	shared	shared	shared	shared	shared	mut
+28887	C	T	N	NA	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA
+28916	G	T	N	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+28977	C	T	N	NA	NA	NA	mut	NA	NA	NA	NA	NA	NA	NA
+29402	G	T	N	mut	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+29510	A	C	N	NA	NA	NA	NA	NA	NA	mut	shared	shared	shared	mut
+29734	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29735	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29736	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29737	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29738	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29739	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29740	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29741	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29742	G	T		mut	NA	mut	NA	NA	NA	NA	NA	NA	NA	NA
+29742	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29743	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29744	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29745	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29746	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29747	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29748	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29749	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29750	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29751	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29752	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29753	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29754	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29755	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29756	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29757	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29758	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29759	N	-		NA	NA	NA	NA	NA	NA	NA	shared	shared	shared	mut
+29834	T	A		NA	mut	NA	NA	NA	NA	NA	NA	NA	NA	NA
