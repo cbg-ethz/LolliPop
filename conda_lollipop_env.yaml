@@ -10,5 +10,5 @@ dependencies:
   - pandas
   - pyyaml
   - tqdm
-  #- click
+  - click
   - poetry-core >= 1.0.8
