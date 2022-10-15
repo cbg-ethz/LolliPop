@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+
 # from scipy.optimize import nnls, least_squares
 from .kernels import GaussianKernel, BoxKernel
 from .regressors import NnlsReg, RobustReg
@@ -68,7 +69,7 @@ class KernelDeconv:
             * np.expand_dims(kvals.values[kvals.values >= min_tol], 1),
             coefs=regfit.fitted,
             y=self.y.values.flatten()[kvals.values >= min_tol],
-            kvals=kvals.values[kvals.values >= min_tol]
+            kvals=kvals.values[kvals.values >= min_tol],
         )
 
         return regfit

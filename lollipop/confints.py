@@ -19,7 +19,9 @@ class NullConfint:
 class WaldConfint:
     """class to compute wald se of the proportions deconvolved through a linear prob. model"""
 
-    def __init__(self, level=0.95, scale="linear", pseudofrac=0.001, quasi=False, method="all"):
+    def __init__(
+        self, level=0.95, scale="linear", pseudofrac=0.001, quasi=False, method="all"
+    ):
         self.level = level
         self.scale = scale
         self.pseudofrac = pseudofrac
@@ -35,27 +37,23 @@ class WaldConfint:
         y_hat = y_hat + self.pseudofrac
         y_hat = y_hat / (y_hat + (1 - y_hat + 2 * self.pseudofrac))
 
-        expected_var = y_hat * (1-y_hat)
+        expected_var = y_hat * (1 - y_hat)
 
         if self.method == "all":
-            return np.sqrt((
-                (((y - y_hat)**2) / expected_var) *
-                kvals /
-                kvals.sum()
-            ).sum())
+            return np.sqrt(
+                ((((y - y_hat) ** 2) / expected_var) * kvals / kvals.sum()).sum()
+            )
 
         elif self.method == "strat":
-            mut_ind = (X[:,-1] == 0)
-            overdisp_vals = (
-                (((y - y_hat)**2) / expected_var) *
-                kvals
-            )[mut_ind]
-            norm = (np.expand_dims(kvals, 1) * X)[mut_ind,:].sum(axis=0) 
-            overdisp_agg = (np.expand_dims(overdisp_vals,1) * X[mut_ind,:]).sum(axis=0)  / norm
+            mut_ind = X[:, -1] == 0
+            overdisp_vals = ((((y - y_hat) ** 2) / expected_var) * kvals)[mut_ind]
+            norm = (np.expand_dims(kvals, 1) * X)[mut_ind, :].sum(axis=0)
+            overdisp_agg = (np.expand_dims(overdisp_vals, 1) * X[mut_ind, :]).sum(
+                axis=0
+            ) / norm
             overdisp_agg[-1] = overdisp_vals.sum() / kvals[mut_ind].sum()
-            
-            return np.sqrt(overdisp_agg)
 
+            return np.sqrt(overdisp_agg)
 
     def standard_error(self, X, coefs):
         """compute standard errors on the linear scale"""
@@ -130,8 +128,8 @@ class WaldConfint:
 
             fitted_pseudo = coefs + self.pseudofrac
             fitted_pseudo = fitted_pseudo / np.sum(fitted_pseudo)
-            logit_fitted_pseudo = np.log(fitted_pseudo) - np.log(1-fitted_pseudo)
-            logit_fitted = np.log(coefs) - np.log(1-coefs)
+            logit_fitted_pseudo = np.log(fitted_pseudo) - np.log(1 - fitted_pseudo)
+            logit_fitted = np.log(coefs) - np.log(1 - coefs)
 
             lower = logit_fitted - norm.ppf(1 - (1 - self.level) / 2) * se
             lower_pseudo = logit_fitted_pseudo - norm.ppf(1 - (1 - self.level) / 2) * se
@@ -146,22 +144,25 @@ class WaldConfint:
                 "upper": upper_consensus,
             }
 
+
 def resample_mutations(df_city1, mutations):
     """
-    Function to resample mutations by replacement (preserving mutation-complement pairs). 
+    Function to resample mutations by replacement (preserving mutation-complement pairs).
     Returns a copy of the DataFrame with <resample_value> column indicating how many times the mutation was in the resample.
     """
 
     # resample indices of mutations with replacement (warning: high is one above actual high!
-    rand_idcs = np.random.randint(0, high=int(len(mutations)/2), size=int(len(mutations)/2))
+    rand_idcs = np.random.randint(
+        0, high=int(len(mutations) / 2), size=int(len(mutations) / 2)
+    )
     # for all mutations, count how many times they appear in the resample (0, 1, 2 ...)
-    resamples_counts = np.bincount(rand_idcs, minlength=int(len(mutations)/2))
+    resamples_counts = np.bincount(rand_idcs, minlength=int(len(mutations) / 2))
     # make a dict of {mutation : occurences in the resample} pairs
-    resample_coeff_dict = dict(zip(mutations, np.concatenate([resamples_counts, resamples_counts])))
+    resample_coeff_dict = dict(
+        zip(mutations, np.concatenate([resamples_counts, resamples_counts]))
+    )
     # make a column with coefficients for how many times a row should be accounted for according to the resample
     df_sampled = df_city1.copy()
-    df_sampled.loc[:,"resample_value"] = df_sampled.mutations.map(resample_coeff_dict)
-    
+    df_sampled.loc[:, "resample_value"] = df_sampled.mutations.map(resample_coeff_dict)
+
     return df_sampled, rand_idcs
-
-

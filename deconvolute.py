@@ -10,22 +10,22 @@ import os
 
 
 kernels = {
-    "gaussian" : ll.GaussianKernel,
-    "box" : ll.BoxKernel,
+    "gaussian": ll.GaussianKernel,
+    "box": ll.BoxKernel,
 }
 confints = {
     "null": ll.NullConfint,
     "wald": ll.WaldConfint,
 }
 regressors = {
-    "nnls" : ll.NnlsReg,
-    "robust" : ll.RobustReg,
+    "nnls": ll.NnlsReg,
+    "robust": ll.RobustReg,
 }
 
 
 @click.command(
     help="Deconvolution for Wastewater Genomics",
-    #epilog="",
+    # epilog="",
 )
 @click.option(
     "--output",
@@ -72,29 +72,29 @@ regressors = {
     required=False,
     default=None,
     type=int,
-    help="Seed the random generator"
+    help="Seed the random generator",
 )
 @click.argument("tally_data", metavar="TALLY_TSV", nargs=1)
 def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data):
     # load data
     print("load data")
-    with open(variants_config, 'r') as file:
+    with open(variants_config, "r") as file:
         conf_yaml = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
-    variants_list = conf_yaml['variants_list']
-    variants_pangolin = conf_yaml['variants_pangolin']
-    variants_not_reported = conf_yaml.get('variants_not_reported', [ ])
-    to_drop=conf_yaml.get('to_drop', [])
-    start_date=conf_yaml.get('start_date')
-    end_date=conf_yaml.get('end_date')
-    remove_deletions=conf_yaml.get('remove_deletions', True)
-    cities_list = plant if plant and len(plant) else conf_yaml.get('cities_list', None)
+    variants_list = conf_yaml["variants_list"]
+    variants_pangolin = conf_yaml["variants_pangolin"]
+    variants_not_reported = conf_yaml.get("variants_not_reported", [])
+    to_drop = conf_yaml.get("to_drop", [])
+    start_date = conf_yaml.get("start_date")
+    end_date = conf_yaml.get("end_date")
+    remove_deletions = conf_yaml.get("remove_deletions", True)
+    cities_list = plant if plant and len(plant) else conf_yaml.get("cities_list", None)
 
-    with open(deconv_config, 'r') as file:
+    with open(deconv_config, "r") as file:
         deconv = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
 
     df_tally = pd.read_csv(tally_data, sep="\t")
     if cities_list is None:
-        cities_list = df_tally['plantname'].unique()
+        cities_list = df_tally["plantname"].unique()
 
     print("preprocess data")
     preproc = ll.DataPreprocesser(df_tally)
@@ -114,22 +114,25 @@ def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data)
     all_deconv = []
     # TODO parameters sanitation (e.g.: JSON schema, check in list)
     # bootstrap
-    bootstrap =  deconv.get("bootstrap",0)
+    bootstrap = deconv.get("bootstrap", 0)
     # kernel
-    kernel = kernels.get(deconv.get("kernel"),ll.GaussianKernel)
-    kernel_params = deconv.get("kernel_params", { })
+    kernel = kernels.get(deconv.get("kernel"), ll.GaussianKernel)
+    kernel_params = deconv.get("kernel_params", {})
     # confint
-    confint = confints.get(deconv.get("confint"),ll.NullConfint)
+    confint = confints.get(deconv.get("confint"), ll.NullConfint)
     have_confint = confint != ll.NullConfint
-    assert not (have_confint and bootstrap > 1), f"either use bootstrapping or a confint class, not both at the same time.\nbootstrap: {bootstrap}, confint: {confint}"
+    assert not (
+        have_confint and bootstrap > 1
+    ), f"either use bootstrapping or a confint class, not both at the same time.\nbootstrap: {bootstrap}, confint: {confint}"
     confint_name = deconv["confint"].capitalize() if have_confint else None
-    confint_params = deconv.get("confint_params", { })
+    confint_params = deconv.get("confint_params", {})
     # regressor
-    regressor = regressors.get(deconv.get("regressor"),ll.NnlsReg)
-    regressor_params = deconv.get("regressor_params", { })
+    regressor = regressors.get(deconv.get("regressor"), ll.NnlsReg)
+    regressor_params = deconv.get("regressor_params", {})
     # deconv
-    deconv_params = deconv.get("deconv_params", { })    
-    print(f""" parameters:
+    deconv_params = deconv.get("deconv_params", {})
+    print(
+        f""" parameters:
   bootstrap: {bootstrap}
   kernel: {kernel}
    params: {kernel_params}
@@ -138,21 +141,26 @@ def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data)
    name: {confint_name}
    non-dummy: {have_confint}
   regressor: {regressor}
-   params: {regressor_params}""")
+   params: {regressor_params}"""
+    )
     for city in tqdm(cities_list) if len(cities_list) > 1 else cities_list:
         if bootstrap <= 1:
             tqdm.write(city)
         # select the current city
         temp_df = preproc.df_tally[preproc.df_tally["plantname"] == city]
-        for b in trange(bootstrap, desc=city, leave= (len(cities_list) > 1)) if bootstrap > 1 else [ 0 ]:
+        for b in (
+            trange(bootstrap, desc=city, leave=(len(cities_list) > 1))
+            if bootstrap > 1
+            else [0]
+        ):
             if bootstrap > 1:
                 # resample if we're doing bootstrapping
-                temp_df2 = ll.resample_mutations(temp_df, temp_df.mutations.unique())[0]        
-                weights = { "weights": temp_df2["resample_value"] }
+                temp_df2 = ll.resample_mutations(temp_df, temp_df.mutations.unique())[0]
+                weights = {"weights": temp_df2["resample_value"]}
             else:
                 # just run one on everything
                 temp_df2 = temp_df
-                weights = { }
+                weights = {}
             # deconvolution
             t_kdec = ll.KernelDeconv(
                 temp_df2[variants_list + ["undetermined"]],
@@ -161,7 +169,7 @@ def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data)
                 kernel=kernel(**kernel_params),
                 reg=regressor(**regressor_params),
                 confint=confint(**confint_params),
-                **weights
+                **weights,
             )
             t_kdec = t_kdec.deconv_all(**deconv_params)
             if have_confint:
@@ -191,9 +199,9 @@ def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data)
         deconv_df = deconv_df.fillna(0)
 
     print("output data")
-    id_vars=["city"]
+    id_vars = ["city"]
     if have_confint:
-        id_vars += [ "estimate" ]
+        id_vars += ["estimate"]
 
     deconv_df_flat = deconv_df.melt(
         id_vars=id_vars,
@@ -203,7 +211,7 @@ def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data)
         ignore_index=False,
     )
     # linear_deconv_df_flat
-    deconv_df_flat.to_csv(output) #, index_label="date")
+    deconv_df_flat.to_csv(output)  # , index_label="date")
 
 
 if __name__ == "__main__":
