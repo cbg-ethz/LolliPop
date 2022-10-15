@@ -111,73 +111,91 @@ def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data)
 
     print("deconvolve all")
     np.random.seed(seed)
-    linear_deconv = []
+    all_deconv = []
     # TODO parameters sanitation (e.g.: JSON schema, check in list)
+    # bootstrap
+    bootstrap =  deconv.get("bootstrap",0)
     # kernel
     kernel = kernels.get(deconv.get("kernel"),ll.GaussianKernel)
     kernel_params = deconv.get("kernel_params", { })
     # confint
     confint = confints.get(deconv.get("confint"),ll.NullConfint)
     have_confint = confint != ll.NullConfint
+    assert not (have_confint and bootstrap > 1), f"either use bootstrapping or a confint class, not both at the same time.\nbootstrap: {bootstrap}, confint: {confint}"
     confint_name = deconv["confint"].capitalize() if have_confint else None
     confint_params = deconv.get("confint_params", { })
     # regressor
     regressor = regressors.get(deconv.get("regressor"),ll.NnlsReg)
+    regressor_params = deconv.get("regressor_params", { })
     # deconv
-    deconv_params = deconv.get("deconv_params", { })
+    deconv_params = deconv.get("deconv_params", { })    
     print(f""" parameters:
+  bootstrap: {bootstrap}
   kernel: {kernel}
    params: {kernel_params}
   confint: {confint}
    params: {confint_params}
    name: {confint_name}
-   does actually generate confints: {have_confint}
-  regressor: {regressor}""")
+   non-dummy: {have_confint}
+  regressor: {regressor}
+   params: {regressor_params}""")
     for city in tqdm(cities_list) if len(cities_list) > 1 else cities_list:
-        tqdm.write(city)
+        if bootstrap <= 1:
+            tqdm.write(city)
+        # select the current city
         temp_df = preproc.df_tally[preproc.df_tally["plantname"] == city]
-        t_kdec = ll.KernelDeconv(
-            temp_df[variants_list + ["undetermined"]],
-            temp_df["frac"],
-            temp_df["date"],
-#         weights=temp_df["resample_value"],
-            kernel=kernel(**kernel_params),
-            reg=regressor(),
-            confint=confint(**confint_params)
-        )
-        t_kdec = t_kdec.deconv_all(**deconv_params)
-        if have_confint:
-            # with conf int
-            res = t_kdec.fitted.copy()
-            res["city"] = city
-            res["estimate"] = "MSE"
-            linear_deconv.append(res)
+        for b in trange(bootstrap, desc=city, leave= (len(cities_list) > 1)) if bootstrap > 1 else [ 0 ]:
+            if bootstrap > 1:
+                # resample if we're doing bootstrapping
+                temp_df2 = ll.resample_mutations(temp_df, temp_df.mutations.unique())[0]        
+                weights = { "weights": temp_df2["resample_value"] }
+            else:
+                # just run one on everything
+                temp_df2 = temp_df
+                weights = { }
+            # deconvolution
+            t_kdec = ll.KernelDeconv(
+                temp_df2[variants_list + ["undetermined"]],
+                temp_df2["frac"],
+                temp_df2["date"],
+                kernel=kernel(**kernel_params),
+                reg=regressor(**regressor_params),
+                confint=confint(**confint_params),
+                **weights
+            )
+            t_kdec = t_kdec.deconv_all(**deconv_params)
+            if have_confint:
+                # with conf int
+                res = t_kdec.fitted.copy()
+                res["city"] = city
+                res["estimate"] = "MSE"
+                all_deconv.append(res)
 
-            res_lower = t_kdec.conf_bands["lower"].copy()
-            res_lower["city"] = city
-            res_lower["estimate"] = f"{confint_name}_lower"
-            linear_deconv.append(res_lower)
+                res_lower = t_kdec.conf_bands["lower"].copy()
+                res_lower["city"] = city
+                res_lower["estimate"] = f"{confint_name}_lower"
+                all_deconv.append(res_lower)
 
-            res_upper = t_kdec.conf_bands["upper"].copy()
-            res_upper["city"] = city
-            res_upper["estimate"] = f"{confint_name}_upper"
-            linear_deconv.append(res_upper)
-        else:
-            # without conf int
-            res = t_kdec.fitted
-            res["city"] = city
-            linear_deconv.append(res)
+                res_upper = t_kdec.conf_bands["upper"].copy()
+                res_upper["city"] = city
+                res_upper["estimate"] = f"{confint_name}_upper"
+                all_deconv.append(res_upper)
+            else:
+                # without conf int
+                res = t_kdec.fitted
+                res["city"] = city
+                all_deconv.append(res)
 
-    linear_deconv_df = pd.concat(linear_deconv)
+    deconv_df = pd.concat(all_deconv)
     if not have_confint:
-        linear_deconv_df = linear_deconv_df.fillna(0)
+        deconv_df = deconv_df.fillna(0)
 
     print("output data")
     id_vars=["city"]
     if have_confint:
         id_vars += [ "estimate" ]
 
-    linear_deconv_df_flat = linear_deconv_df.melt(
+    deconv_df_flat = deconv_df.melt(
         id_vars=id_vars,
         value_vars=variants_list + ["undetermined"],
         var_name="variant",
@@ -185,7 +203,7 @@ def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data)
         ignore_index=False,
     )
     # linear_deconv_df_flat
-    linear_deconv_df_flat.to_csv(output) #, index_label="date")
+    deconv_df_flat.to_csv(output) #, index_label="date")
 
 
 if __name__ == "__main__":
