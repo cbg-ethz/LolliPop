@@ -8,7 +8,7 @@ dependencies:
   - numpy
   - scipy
   - pandas
-  - pyyaml
+  - ruamel_yaml
   - tqdm
   - click
   - poetry-core >= 1.0.8
