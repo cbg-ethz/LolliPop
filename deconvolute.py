@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import pandas as pd
 import numpy as np
 import lollipop as ll
@@ -7,6 +8,7 @@ from tqdm import tqdm, trange
 import click
 import ruamel.yaml
 import os
+import sys
 
 
 kernels = {
@@ -46,24 +48,34 @@ regressors = {
     help="Variant configuration used during deconvolution",
 )
 @click.option(
+    "--variants-dates",
+    "--vd",
+    metavar="YAML",
+    required=False,
+    default=None,
+    type=str,
+    help="Variants to scan per periods (as determined with cojac)",
+)
+@click.option(
     "--deconv-config",
     "--dec",
-    "-d",
+    "-k",
     metavar="YAML",
     required=True,
     type=str,
-    help="configuration of parameters for deconvolution",
+    help="configuration of parameters for kernel deconvolution",
 )
 @click.option(
-    "--plant",
-    "--catchment",
+    "--loc",
+    "--location",
     "--wwtp",
-    "-t",
+    "--catchment",
+    "-l",
     metavar="NAME",
     required=False,
     multiple=True,
     default=None,
-    help="Name(s) of wastewater treatment plant/catchment area to process",
+    help="Name(s) of location/wastewater treatment plant/catchment area to process",
 )
 @click.option(
     "--seed",
@@ -75,7 +87,9 @@ regressors = {
     help="Seed the random generator",
 )
 @click.argument("tally_data", metavar="TALLY_TSV", nargs=1)
-def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data):
+def deconvolute(
+    variants_config, variants_dates, deconv_config, loc, seed, output, tally_data
+):
     # load data
     print("load data")
     with open(variants_config, "r") as file:
@@ -87,14 +101,41 @@ def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data)
     start_date = conf_yaml.get("start_date")
     end_date = conf_yaml.get("end_date")
     remove_deletions = conf_yaml.get("remove_deletions", True)
-    cities_list = plant if plant and len(plant) else conf_yaml.get("cities_list", None)
+    locations_list = loc if loc and len(loc) else conf_yaml.get("locations_list", None)
 
+    # dates intervals for which to apply different variants as discovered using cojac
+    if variants_dates:
+        with open(variants_dates, "r") as file:
+            var_dates = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
+    else:
+        # search for all, always
+        var_dates["var_dates"][
+            conf_yaml.get("start_date", "2020-01-01")
+        ] = variants_list
+        print(
+            "Warning: deconvoluting for all variants on all dates. Consider writing a var_dates YAML based on cojac detections",
+            file=sys.stderr,
+        )
+    # build the intervals pairs
+    d = list(var_dates["var_dates"].keys())
+    date_intervals = list(zip(d, d[1:] + [None]))
+    for mindate, maxdate in date_intervals:
+        if maxdate:
+            assert (
+                mindate < maxdate
+            ), f"out of order dates: {mindate} >= {maxdate}. Please fix the content of {variants_date}"
+            print(f"from {mindate} to {maxdate}: {var_dates['var_dates'][mindate]}")
+        else:
+            print(f"from {mindate} onward: {var_dates['var_dates'][mindate]}")
+
+    # kernel deconvolution params
     with open(deconv_config, "r") as file:
         deconv = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
 
-    df_tally = pd.read_csv(tally_data, sep="\t")
-    if cities_list is None:
-        cities_list = df_tally["plantname"].unique()
+    # data
+    df_tally = pd.read_csv(tally_data, sep="\t", dtype={"location_code": "str"})
+    if locations_list is None:
+        locations_list = df_tally["location"].unique()
 
     print("preprocess data")
     preproc = ll.DataPreprocesser(df_tally)
@@ -143,69 +184,94 @@ def deconvolute(variants_config, deconv_config, plant, seed, output, tally_data)
   regressor: {regressor}
    params: {regressor_params}"""
     )
-    for city in tqdm(cities_list) if len(cities_list) > 1 else cities_list:
+
+    # do it
+    for location in tqdm(locations_list) if len(locations_list) > 1 else locations_list:
         if bootstrap <= 1:
-            tqdm.write(city)
-        # select the current city
-        temp_df = preproc.df_tally[preproc.df_tally["plantname"] == city]
+            tqdm.write(location)
+        # select the current location
+        temp_df = preproc.df_tally[preproc.df_tally["location"] == location]
         for b in (
-            trange(bootstrap, desc=city, leave=(len(cities_list) > 1))
+            trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
             if bootstrap > 1
             else [0]
         ):
             if bootstrap > 1:
                 # resample if we're doing bootstrapping
-                temp_df2 = ll.resample_mutations(temp_df, temp_df.mutations.unique())[0]
+                temp_dfb = ll.resample_mutations(temp_df, temp_df.mutations.unique())[0]
                 weights = {"weights": temp_df2["resample_value"]}
             else:
                 # just run one on everything
-                temp_df2 = temp_df
+                temp_dfb = temp_df
                 weights = {}
-            # deconvolution
-            t_kdec = ll.KernelDeconv(
-                temp_df2[variants_list + ["undetermined"]],
-                temp_df2["frac"],
-                temp_df2["date"],
-                kernel=kernel(**kernel_params),
-                reg=regressor(**regressor_params),
-                confint=confint(**confint_params),
-                **weights,
-            )
-            t_kdec = t_kdec.deconv_all(**deconv_params)
-            if have_confint:
-                # with conf int
-                res = t_kdec.fitted.copy()
-                res["city"] = city
-                res["estimate"] = "MSE"
-                all_deconv.append(res)
 
-                res_lower = t_kdec.conf_bands["lower"].copy()
-                res_lower["city"] = city
-                res_lower["estimate"] = f"{confint_name}_lower"
-                all_deconv.append(res_lower)
+            for mindate, maxdate in (
+                tqdm(date_intervals)
+                if bootstrap <= 1 and len(date_intervals) > 1
+                else date_intervals
+            ):
+                if maxdate:
+                    temp_df2 = temp_dfb[
+                        temp_dfb.date.between(mindate, maxdate, inclusive="left")
+                    ]
+                else:
+                    temp_df2 = temp_dfb[temp_dfb.date >= mindate]
+                if temp_df2.size == 0:
+                    continue
 
-                res_upper = t_kdec.conf_bands["upper"].copy()
-                res_upper["city"] = city
-                res_upper["estimate"] = f"{confint_name}_upper"
-                all_deconv.append(res_upper)
-            else:
-                # without conf int
-                res = t_kdec.fitted
-                res["city"] = city
-                all_deconv.append(res)
+                # deconvolution
+                t_kdec = ll.KernelDeconv(
+                    temp_df2[var_dates["var_dates"][mindate] + ["undetermined"]],
+                    temp_df2["frac"],
+                    temp_df2["date"],
+                    kernel=kernel(**kernel_params),
+                    reg=regressor(**regressor_params),
+                    confint=confint(**confint_params),
+                    **weights,
+                )
+                t_kdec = t_kdec.deconv_all(**deconv_params)
+                if have_confint:
+                    # with conf int
+                    res = t_kdec.fitted.copy()
+                    res["location"] = location
+                    res["estimate"] = "MSE"
+                    all_deconv.append(res)
+
+                    res_lower = t_kdec.conf_bands["lower"].copy()
+                    res_lower["location"] = location
+                    res_lower["estimate"] = f"{confint_name}_lower"
+                    all_deconv.append(res_lower)
+
+                    res_upper = t_kdec.conf_bands["upper"].copy()
+                    res_upper["location"] = location
+                    res_upper["estimate"] = f"{confint_name}_upper"
+                    all_deconv.append(res_upper)
+                else:
+                    # without conf int
+                    res = t_kdec.fitted
+                    res["location"] = location
+                    all_deconv.append(res)
 
     deconv_df = pd.concat(all_deconv)
     if not have_confint:
         deconv_df = deconv_df.fillna(0)
 
     print("output data")
-    id_vars = ["city"]
+    id_vars = ["location"]
     if have_confint:
         id_vars += ["estimate"]
 
+    # variants actually in dataframe
+    found_var = list(set(variants_list) & set(deconv_df.columns))
+    if len(found_var) < len(variants_list):
+        print(
+            f"some variants never found in dataset {set(variants_list) - set(found_var)}. Check the dates in {variants_dates}",
+            file=sys.stderr,
+        )
+
     deconv_df_flat = deconv_df.melt(
         id_vars=id_vars,
-        value_vars=variants_list + ["undetermined"],
+        value_vars=found_var + ["undetermined"],
         var_name="variant",
         value_name="frac",
         ignore_index=False,

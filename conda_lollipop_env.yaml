@@ -8,7 +8,11 @@ dependencies:
   - numpy
   - scipy
   - pandas
-  - ruamel_yaml
+  - zstandard
+  - bcbio-gff
+  - ruamel.yaml
+  - strictyaml
+  - regex
   - tqdm
   - click
   - poetry-core >= 1.0.8

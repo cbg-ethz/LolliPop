@@ -69,10 +69,15 @@ class WaldConfint:
         # compute Fisher information of in terms of linear prob. model
         linprob_info = X.T.dot(binom_info).dot(X)
         # try to invert Fisher information matrix
+        se = coefs * np.nan
         try:
-            se = np.sqrt(np.diag(np.linalg.inv(linprob_info)))
+            t_diag = np.diag(np.linalg.inv(linprob_info))
         except np.linalg.LinAlgError:
-            se = coefs * np.nan
+            pass  # leave the nans in place
+        else:
+            # compute root on non-negative
+            mask = t_diag >= 0.0
+            se[mask] = np.sqrt(t_diag[mask])
 
         return se
 
