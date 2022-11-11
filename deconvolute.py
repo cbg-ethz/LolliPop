@@ -135,7 +135,15 @@ def deconvolute(
     # data
     df_tally = pd.read_csv(tally_data, sep="\t", dtype={"location_code": "str"})
     if locations_list is None:
-        locations_list = df_tally["location"].unique()
+        # remember to remove empty cells: nan or empty cells
+        locations_list = list(set(df_tally["location"].unique()) - {"", np.nan})
+        print(locations_list)
+    else:
+        bad_locations = set(locations_list) - set(df_tally["location"].unique())
+        assert 0 == len(
+            bad_locations
+        ), f"Bad locations in list: {bad_locations}, please fix {variants_config}."
+        # locations_list = list(set(locations_list) - bad_locations)
 
     print("preprocess data")
     preproc = ll.DataPreprocesser(df_tally)
@@ -210,7 +218,7 @@ def deconvolute(
                 if bootstrap <= 1 and len(date_intervals) > 1
                 else date_intervals
             ):
-                if maxdate:
+                if maxdate is not None:
                     temp_df2 = temp_dfb[
                         temp_dfb.date.between(mindate, maxdate, inclusive="left")
                     ]
@@ -277,7 +285,7 @@ def deconvolute(
         ignore_index=False,
     )
     # linear_deconv_df_flat
-    deconv_df_flat.to_csv(output)  # , index_label="date")
+    deconv_df_flat.to_csv(output, sep="\t")  # , index_label="date")
 
 
 if __name__ == "__main__":
