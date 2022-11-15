@@ -41,6 +41,7 @@ class DataPreprocesser:
         self.df_tally = self.df_tally.drop(
             variants_not_reported, axis=1, errors="ignore"
         )
+        # TODO support date-less mode
         # drop rows without estimated frac or date
         self.df_tally.dropna(subset=["frac", "date"], inplace=True)
         # create column with mutation signature
@@ -100,6 +101,8 @@ class DataPreprocesser:
     def filter_mutations(self):
         """very temporary function, to filter out hardcoded problematic mutations"""
 
+        # HACK hand hardcoded
+        # TODO detect problematic mutations
         self.df_tally = self.df_tally[
             ~self.df_tally["mutations"].isin(
                 ["28461G", "11201G", "26801C"] + ["-28461G", "-11201G", "-26801C"]

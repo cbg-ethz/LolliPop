@@ -98,20 +98,21 @@ def deconvolute(
     variants_pangolin = conf_yaml["variants_pangolin"]
     variants_not_reported = conf_yaml.get("variants_not_reported", [])
     to_drop = conf_yaml.get("to_drop", [])
-    start_date = conf_yaml.get("start_date")
-    end_date = conf_yaml.get("end_date")
+    start_date = conf_yaml.get("start_date", None)
+    end_date = conf_yaml.get("end_date", None)
     remove_deletions = conf_yaml.get("remove_deletions", True)
     locations_list = loc if loc and len(loc) else conf_yaml.get("locations_list", None)
 
+    # TODO support date-less dataset
     # dates intervals for which to apply different variants as discovered using cojac
     if variants_dates:
         with open(variants_dates, "r") as file:
             var_dates = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
     else:
         # search for all, always
-        var_dates["var_dates"][
-            conf_yaml.get("start_date", "2020-01-01")
-        ] = variants_list
+        var_dates = {
+            "var_dates": {conf_yaml.get("start_date", "2020-01-01"): variants_list}
+        }
         print(
             "Warning: deconvoluting for all variants on all dates. Consider writing a var_dates YAML based on cojac detections",
             file=sys.stderr,
@@ -133,7 +134,9 @@ def deconvolute(
         deconv = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
 
     # data
-    df_tally = pd.read_csv(tally_data, sep="\t", dtype={"location_code": "str"})
+    df_tally = pd.read_csv(
+        tally_data, sep="\t", parse_dates=["date"], dtype={"location_code": "str"}
+    )
     if locations_list is None:
         # remember to remove empty cells: nan or empty cells
         locations_list = list(set(df_tally["location"].unique()) - {"", np.nan})
@@ -190,15 +193,17 @@ def deconvolute(
    name: {confint_name}
    non-dummy: {have_confint}
   regressor: {regressor}
-   params: {regressor_params}"""
+   params: {regressor_params}
+  deconv:
+   params: {deconv_params}"""
     )
 
     # do it
     for location in tqdm(locations_list) if len(locations_list) > 1 else locations_list:
-        if bootstrap <= 1:
+        if bootstrap <= 1 and len(date_intervals) <= 1:
             tqdm.write(location)
         # select the current location
-        temp_df = preproc.df_tally[preproc.df_tally["location"] == location]
+        loc_df = preproc.df_tally[preproc.df_tally["location"] == location]
         for b in (
             trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
             if bootstrap > 1
@@ -206,15 +211,15 @@ def deconvolute(
         ):
             if bootstrap > 1:
                 # resample if we're doing bootstrapping
-                temp_dfb = ll.resample_mutations(temp_df, temp_df.mutations.unique())[0]
-                weights = {"weights": temp_df2["resample_value"]}
+                temp_dfb = ll.resample_mutations(loc_df, loc_df.mutations.unique())[0]
+                weights = {"weights": temp_dfb["resample_value"]}
             else:
                 # just run one on everything
-                temp_dfb = temp_df
+                temp_dfb = loc_df
                 weights = {}
 
             for mindate, maxdate in (
-                tqdm(date_intervals)
+                tqdm(date_intervals, desc=location)
                 if bootstrap <= 1 and len(date_intervals) > 1
                 else date_intervals
             ):
@@ -285,7 +290,7 @@ def deconvolute(
         ignore_index=False,
     )
     # linear_deconv_df_flat
-    deconv_df_flat.to_csv(output, sep="\t")  # , index_label="date")
+    deconv_df_flat.to_csv(output, sep="\t", index_label="date")
 
 
 if __name__ == "__main__":
