@@ -20,7 +20,7 @@ schema = {
 types = {"position": "int"}
 
 
-def load_voc_yaml(yam):
+def load_voc_yaml(yam, yp="(yaml)"):
     muts = pd.DataFrame(
         data=schema
         | {
@@ -161,7 +161,7 @@ def generate_mutlist(output, out_pangovars, genes, voc_dir, vocs, verbose):
         with open(yp, "r") as yf:
             yam = strictyaml.dirty_load(yf.read(), allow_flow_style=True).data
 
-        muts = load_voc_yaml(yam)
+        muts = load_voc_yaml(yam, yp)
 
         if out_pangovars and "pangolin" in yam["variant"]:
             pango_vars["variants_pangolin"][yam["variant"]["short"]] = yam["variant"][

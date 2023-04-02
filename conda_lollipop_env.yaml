@@ -12,7 +12,6 @@ dependencies:
   - bcbio-gff
   - ruamel.yaml
   - strictyaml
-  - regex
   - tqdm
   - click
   - click-option-group
