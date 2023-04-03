@@ -29,6 +29,7 @@ class DataPreprocesser:
         to_drop,
         start_date=None,
         end_date=None,
+        no_date=False,
         remove_deletions=True,
     ):
         """General preprocessing steps"""
@@ -41,20 +42,24 @@ class DataPreprocesser:
         self.df_tally = self.df_tally.drop(
             variants_not_reported, axis=1, errors="ignore"
         )
-        # TODO support date-less mode
         # drop rows without estimated frac or date
-        self.df_tally.dropna(subset=["frac", "date"], inplace=True)
+        self.df_tally.dropna(
+            subset=["frac", "date"] if not no_date else ["frac"], inplace=True
+        )
+        # TODO cojac-based instead of SNV-bsed deconvolution
         # create column with mutation signature
         self.df_tally["mutations"] = (
             self.df_tally["pos"].astype(str) + self.df_tally["base"]
         )
         # convert date string to date object
+        # (also convert any dummy date of 'no_date'
         self.df_tally["date"] = pd.to_datetime(self.df_tally["date"])
         # filter by minimum and maximum dates
-        if start_date is not None:
-            self.df_tally = self.df_tally[(self.df_tally["date"] >= start_date)]
-        if end_date is not None:
-            self.df_tally = self.df_tally[(self.df_tally["date"] < end_date)]
+        if not no_date:
+            if start_date is not None:
+                self.df_tally = self.df_tally[(self.df_tally["date"] >= start_date)]
+            if end_date is not None:
+                self.df_tally = self.df_tally[(self.df_tally["date"] < end_date)]
         # remove deletions
         if remove_deletions:
             self.df_tally = self.df_tally[~(self.df_tally["base"] == "-")]
@@ -86,14 +91,17 @@ class DataPreprocesser:
         )
 
         # remove uninformative mutations
+        variants_columns = list(set(variants_list) & set(self.df_tally.columns))
         self.df_tally = self.df_tally[
-            ~self.df_tally[variants_list].sum(axis=1).isin([0, len(variants_list)])
+            ~self.df_tally[variants_columns]
+            .sum(axis=1)
+            .isin([0, len(variants_columns)])
         ]
 
         # make complement of mutation signatures for undetermined cases
         self.df_tally.insert(self.df_tally.columns.size - 1, "undetermined", 0)
         self.df_tally = pd.concat(
-            [self.df_tally, self.make_complement(self.df_tally, variants_list)]
+            [self.df_tally, self.make_complement(self.df_tally, variants_columns)]
         )
 
         return self

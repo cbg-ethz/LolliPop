@@ -45,7 +45,7 @@ regressors = {
     metavar="YAML",
     required=True,
     type=str,
-    help="Variant configuration used during deconvolution",
+    help="Variants configuration used during deconvolution",
 )
 @click.option(
     "--variants-dates",
@@ -63,7 +63,7 @@ regressors = {
     metavar="YAML",
     required=True,
     type=str,
-    help="configuration of parameters for kernel deconvolution",
+    help="Configuration of parameters for kernel deconvolution",
 )
 @click.option(
     "--loc",
@@ -94,49 +94,65 @@ def deconvolute(
     print("load data")
     with open(variants_config, "r") as file:
         conf_yaml = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
-    variants_list = conf_yaml["variants_list"]
     variants_pangolin = conf_yaml["variants_pangolin"]
+    variants_list = conf_yaml.get("variants_list", None)
     variants_not_reported = conf_yaml.get("variants_not_reported", [])
     to_drop = conf_yaml.get("to_drop", [])
+    no_date = conf_yaml.get("no_date", False)
+    no_loc = conf_yaml.get("no_loc", False)
     start_date = conf_yaml.get("start_date", None)
     end_date = conf_yaml.get("end_date", None)
     remove_deletions = conf_yaml.get("remove_deletions", True)
     locations_list = loc if loc and len(loc) else conf_yaml.get("locations_list", None)
-
-    # TODO support date-less dataset
-    # dates intervals for which to apply different variants as discovered using cojac
-    if variants_dates:
-        with open(variants_dates, "r") as file:
-            var_dates = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
-    else:
-        # search for all, always
-        var_dates = {
-            "var_dates": {conf_yaml.get("start_date", "2020-01-01"): variants_list}
-        }
-        print(
-            "Warning: deconvoluting for all variants on all dates. Consider writing a var_dates YAML based on cojac detections",
-            file=sys.stderr,
-        )
-    # build the intervals pairs
-    d = list(var_dates["var_dates"].keys())
-    date_intervals = list(zip(d, d[1:] + [None]))
-    for mindate, maxdate in date_intervals:
-        if maxdate:
-            assert (
-                mindate < maxdate
-            ), f"out of order dates: {mindate} >= {maxdate}. Please fix the content of {variants_date}"
-            print(f"from {mindate} to {maxdate}: {var_dates['var_dates'][mindate]}")
-        else:
-            print(f"from {mindate} onward: {var_dates['var_dates'][mindate]}")
 
     # kernel deconvolution params
     with open(deconv_config, "r") as file:
         deconv = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
 
     # data
-    df_tally = pd.read_csv(
-        tally_data, sep="\t", parse_dates=["date"], dtype={"location_code": "str"}
-    )
+    try:
+        df_tally = pd.read_csv(
+            tally_data, sep="\t", parse_dates=["date"], dtype={"location_code": "str"}
+        )
+    except ValueError:
+        df_tally = pd.read_csv(tally_data, sep="\t", dtype={"location_code": "str"})
+
+    # handle location
+    if not no_loc and "location" not in df_tally.columns:
+        if "location_code" in df_tally.columns:
+            print("NOTE: No location fullnames, using codes instead")
+            df_tally["location"] = df_tally["location_code"]
+        elif len(locations_list) == 1:
+            print(
+                "WARNING: No location in input data, assuming everything is {locations_list[0]}"
+            )
+            df_tally["location"] = locations_list[0]
+        elif locations_list is None:
+            print(
+                f"WARNING: No location in input data. Either pass one with `--loc`/`locations_list` parameter  or set true the `no_loc` parameter {variants_config}"
+            )
+            no_loc = True
+        else:
+            print(
+                f"ERROR: No location in input data. Either pass exactly one with `--loc`/`locations_list` parameter or set true the `no_loc` parameter {variants_config}"
+            )
+            sys.exit(1)
+
+    if no_loc:
+        if "location" in df_tally:
+            locations_list = list(set(df_tally["location"].unique()) - {"", np.nan})
+            if len(locations_list):
+                print(
+                    f"WARNING: no_loc is set, but there are still locations in input: {locations_list}"
+                )
+        else:
+            print(
+                "no_loc: ignoring location information and treating all input as a single location"
+            )
+
+        df_tally["location"] = "location"
+        locations_list = ["location"]
+
     if locations_list is None:
         # remember to remove empty cells: nan or empty cells
         locations_list = list(set(df_tally["location"].unique()) - {"", np.nan})
@@ -148,6 +164,91 @@ def deconvolute(
         ), f"Bad locations in list: {bad_locations}, please fix {variants_config}."
         # locations_list = list(set(locations_list) - bad_locations)
 
+    # check if dates are present
+    if "date" not in df_tally.columns or all(df_tally["date"].isna()):
+        if not no_date:
+            no_date = True
+            print(
+                f"WARNING: No dates found in input data, automatically switching `no_date` !!!\n\tPlease either check input if this is not expected or add set true the `no_date` parameter to your {variants_config}"
+            )
+    # no date!!!
+    if no_date:
+        print("no_date: special mode for deconvoluting without time component")
+        # HACK dummy date to keep the deconvolution kernel happy
+        # add dummy date
+        date_dict = dict(
+            zip(
+                df_tally["sample"].unique(),
+                [
+                    str(np.datetime64("1999-12-01") + np.timedelta64(i, "D"))
+                    for i in range(len(df_tally["sample"].unique()))
+                ],
+            )
+        )
+        df_tally["date"] = pd.to_datetime(
+            np.array([date_dict[i] for i in df_tally["sample"]])
+        )
+
+    # dates intervals for which to apply different variants as discovered using cojac
+    if variants_dates:
+        if no_date:
+            print(
+                f"WARNING: running in `no_date` mode, still var_dates specified in {variants_dates}"
+            )
+        with open(variants_dates, "r") as file:
+            var_dates = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
+
+        all_var_dates = set(
+            [var for lst in var_dates["var_dates"].values() for var in lst]
+        )
+
+        if variants_list is None:
+            # build list of all variants from var_dates (if we did lack one)
+            variants_list = list(all_var_dates)
+        else:
+            # have list => double - check it against var_dates
+            not_on_date = list(set(variants_list) - all_var_dates)
+            if len(not_on_date):
+                print(
+                    f"NOTE: {not_on_date} never used in {variants_dates}, despite being in variants_list"
+                )
+            not_on_list = list(all_var_dates - set(variants_list))
+            if len(not_on_list):
+                print(
+                    f"WARNING: {variants_dates} lists variants: {not_on_list}, but they are not in variants_list"
+                )
+                variants_list += not_on_list
+    else:
+        if variants_list is None:
+            # build list of all variants from lineage map (if we did lack one)
+            variants_list = list(set(variants_pangolin.values()))
+
+        if no_date:
+            # dummy date
+            var_dates = {"var_dates": {"1999-12-01": variants_list}}
+        else:
+            # search for all, always
+            var_dates = {
+                "var_dates": {conf_yaml.get("start_date", "2020-01-01"): variants_list}
+            }
+            print(
+                "NOTE: deconvoluting for all variants on all dates. Consider writing a var_dates YAML based on cojac detections",
+                file=sys.stderr,
+            )
+
+    # build the intervals pairs
+    d = list(var_dates["var_dates"].keys())
+    date_intervals = list(zip(d, d[1:] + [None]))
+    if not no_date:
+        for mindate, maxdate in date_intervals:
+            if maxdate:
+                assert (
+                    mindate < maxdate
+                ), f"out of order dates: {mindate} >= {maxdate}. Please fix the content of {variants_date}"
+                print(f"from {mindate} to {maxdate}: {var_dates['var_dates'][mindate]}")
+            else:
+                print(f"from {mindate} onward: {var_dates['var_dates'][mindate]}")
+
     print("preprocess data")
     preproc = ll.DataPreprocesser(df_tally)
     preproc = preproc.general_preprocess(
@@ -157,6 +258,7 @@ def deconvolute(
         to_drop=to_drop,
         start_date=start_date,
         end_date=end_date,
+        no_date=no_date,
         remove_deletions=remove_deletions,
     )
     preproc = preproc.filter_mutations()
@@ -170,6 +272,9 @@ def deconvolute(
     # kernel
     kernel = kernels.get(deconv.get("kernel"), ll.GaussianKernel)
     kernel_params = deconv.get("kernel_params", {})
+    if no_date:
+        print("no_date: overriding kernel bandwidth")
+        kernel_params["bandwidth"] = 1e-17
     # confint
     confint = confints.get(deconv.get("confint"), ll.NullConfint)
     have_confint = confint != ll.NullConfint
@@ -203,7 +308,11 @@ def deconvolute(
         if bootstrap <= 1 and len(date_intervals) <= 1:
             tqdm.write(location)
         # select the current location
-        loc_df = preproc.df_tally[preproc.df_tally["location"] == location]
+        loc_df = (
+            preproc.df_tally[preproc.df_tally["location"] == location]
+            if not no_loc
+            else preproc.df_tally
+        )
         for b in (
             trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
             if bootstrap > 1
@@ -212,26 +321,34 @@ def deconvolute(
             if bootstrap > 1:
                 # resample if we're doing bootstrapping
                 temp_dfb = ll.resample_mutations(loc_df, loc_df.mutations.unique())[0]
-                weights = {"weights": temp_dfb["resample_value"]}
             else:
                 # just run one on everything
                 temp_dfb = loc_df
-                weights = {}
 
             for mindate, maxdate in (
                 tqdm(date_intervals, desc=location)
                 if bootstrap <= 1 and len(date_intervals) > 1
                 else date_intervals
             ):
-                if maxdate is not None:
-                    temp_df2 = temp_dfb[
-                        temp_dfb.date.between(mindate, maxdate, inclusive="left")
-                    ]
+                if not no_date:
+                    # filter by time period for period-specific variants list
+                    if maxdate is not None:
+                        temp_df2 = temp_dfb[
+                            temp_dfb.date.between(mindate, maxdate, inclusive="left")
+                        ]
+                    else:
+                        temp_df2 = temp_dfb[temp_dfb.date >= mindate]
                 else:
-                    temp_df2 = temp_dfb[temp_dfb.date >= mindate]
+                    # no date => no filtering
+                    temp_df2 = temp_dfb
                 if temp_df2.size == 0:
                     continue
-
+                # resampling weights
+                if bootstrap > 1:
+                    weights = {"weights": temp_df2["resample_value"]}
+                else:
+                    # just run one on everything
+                    weights = {}
                 # deconvolution
                 t_kdec = ll.KernelDeconv(
                     temp_df2[var_dates["var_dates"][mindate] + ["undetermined"]],
