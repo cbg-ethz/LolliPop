@@ -7,6 +7,7 @@ from tqdm import tqdm, trange
 
 import click
 import ruamel.yaml
+import json
 import os
 import sys
 
@@ -37,6 +38,22 @@ regressors = {
     default="deconvolved.csv",
     type=str,
     help="Write results to this output CSV instead of 'deconvolved.csv'",
+)
+@click.option(
+    "--fmt-columns",
+    "-C",
+    is_flag=True,
+    default=False,
+    help="Change output CSV format to one column per variant (normally, variants are each on a separate line)",
+)
+@click.option(
+    "--out-json",
+    "--oj",
+    metavar="JSON",
+    required=False,
+    default=None,
+    type=click.Path(),
+    help="Also write a JSON results for upload to Cov-spectrum, etc.",
 )
 @click.option(
     "--variants-config",
@@ -88,7 +105,15 @@ regressors = {
 )
 @click.argument("tally_data", metavar="TALLY_TSV", nargs=1)
 def deconvolute(
-    variants_config, variants_dates, deconv_config, loc, seed, output, tally_data
+    variants_config,
+    variants_dates,
+    deconv_config,
+    loc,
+    seed,
+    output,
+    fmt_columns,
+    out_json,
+    tally_data,
 ):
     # load data
     print("load data")
@@ -382,11 +407,11 @@ def deconvolute(
                     res["location"] = location
                     all_deconv.append(res)
 
+    print("post-process data")
     deconv_df = pd.concat(all_deconv)
     if not have_confint:
         deconv_df = deconv_df.fillna(0)
 
-    print("output data")
     id_vars = ["location"]
     if have_confint:
         id_vars += ["estimate"]
@@ -399,6 +424,7 @@ def deconvolute(
             file=sys.stderr,
         )
 
+    # deconv output
     deconv_df_flat = deconv_df.melt(
         id_vars=id_vars,
         value_vars=found_var + ["undetermined"],
@@ -406,8 +432,128 @@ def deconvolute(
         value_name="frac",
         ignore_index=False,
     )
-    # linear_deconv_df_flat
-    deconv_df_flat.to_csv(output, sep="\t", index_label="date")
+    # deconv_df_flat.to_csv(out_flat, sep="\t", index_label="date")
+
+    # aggregation
+    agg_columns = ["location", "variant", "index"]
+    if bootstrap > 1:
+        # bootstrap => mean + quantiles
+        deconv_df_agg = (
+            deconv_df_flat.reset_index()
+            .groupby(agg_columns)
+            .agg(
+                [
+                    np.mean,
+                    lambda x: np.quantile(x, q=0.025),
+                    lambda x: np.quantile(x, q=0.975),
+                ]
+            )
+            .reset_index()
+        )
+
+        export_columns = {
+            ("index", ""): "date",
+            ("frac", "mean"): "proportion",
+            ("frac", "<lambda_0>"): "proportionLower",
+            ("frac", "<lambda_1>"): "proportionUpper",
+        }
+    elif have_confint:
+        # wald => pivot
+        deconv_df_agg = (
+            deconv_df_flat.reset_index()
+            .pivot(index=agg_columns, columns="estimate")
+            .reset_index()
+        )
+
+        export_columns = {
+            ("index", ""): "date",
+            ("frac", "MSE"): "proportion",
+            ("frac", f"{confint_name}_lower"): "proportionLower",
+            ("frac", f"{confint_name}_upper"): "proportionUpper",
+        }
+    else:
+        # no conf => as-is
+        deconv_df_agg = deconv_df_flat.reset_index()[agg_columns + ["frac"]]
+        export_columns = {
+            "index": "date",
+            "frac": "proportion",
+        }
+    deconv_df_agg.columns = [
+        export_columns.get(col, "".join(col) if type(col) is tuple else col)
+        for col in deconv_df_agg.columns.values
+    ]
+    deconv_df_agg = deconv_df_agg.sort_values(by=["location", "variant", "date"])
+    # reverse logit scale
+    if have_confint and confint_params["scale"] == "logit":
+        deconv_df_agg[["proportionLower", "proportionUpper"]] = deconv_df_agg[
+            ["proportionLower", "proportionUpper"]
+        ].applymap(
+            lambda x: np.exp(np.clip(x, -100, 100))
+            / (1 + np.exp(np.clip(x, -100, 100)))
+        )
+
+    ### CSV output
+    if fmt_columns:
+        output_df = (
+            deconv_df_agg.reset_index()
+            .pivot(
+                index=["location", "date"],
+                columns="variant",
+                values=list(set(export_columns.values()) - {"date"}),
+            )
+            .reset_index()
+        )
+        output_df.columns = [
+            col
+            if type(col) is not tuple
+            else col[1]
+            if col[0] == "proportion"
+            else f"{col[1]}_{col[0][len('proportion'):]}"
+            if len(col[0]) > len("proportion")
+            else "".join(col)
+            for col in output_df.columns.values
+        ]
+    else:
+        output_df = deconv_df_agg
+    print("output data")
+    output_df.drop(
+        (["location"] if no_loc else []) + (["date"] if no_date else []),
+        axis=1,
+        errors="ignore",
+    ).to_csv(output, sep="\t", index=None)
+
+    ### JSON
+    print("output json")
+    if out_json:
+        update_data = {}
+
+        loc_uniq = deconv_df_agg["location"].unique()
+        var_uniq = deconv_df_agg["variant"].unique()
+
+        json_columns = export_columns.values()
+        if no_date:
+            json_columns = list(set(json_columns) - {"date"})
+        for loc in tqdm(loc_uniq, desc="Location", position=0):
+            update_data[loc] = {}
+            for var in tqdm(var_uniq, desc=loc, position=1, leave=False):
+                tt_df = deconv_df_agg.loc[
+                    (deconv_df_agg["variant"] == var)
+                    & (deconv_df_agg["location"] == loc),
+                    json_columns,
+                ].copy()
+                if not no_date:
+                    tt_df["date"] = tt_df["date"].astype("str")
+
+                update_data[loc][var] = {
+                    "timeseriesSummary": [
+                        dict(tt_df.iloc[i,]) for i in range(tt_df.shape[0])
+                    ]
+                }
+
+        with open(out_json, "w") as file:
+            file.write(
+                json.dumps(update_data).replace("NaN", "null")
+            )  # syntactically standard compliant JSON vs. python numpy's output.
 
 
 if __name__ == "__main__":
