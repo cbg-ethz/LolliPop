@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import click
+from lollipop import __version__
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -20,6 +21,7 @@ getmutations.add_command(from_basecount)
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
+@click.version_option(__version__)
 def cli():
     pass
 

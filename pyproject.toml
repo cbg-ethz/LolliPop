@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lollipop"
-version = "0.1.0"
+version = "0.0.0"
 description = "tool for Deconvolution for Wastewater Genomics"
 authors = ["David Dreifuss <dadreifuss@gmail.com>", "Ivan Blagoev Topolsky <ivan.topolsky@bsse.ethz.ch>", "Matteo Carrara <carrara@nexus.ethz.ch>"]
 maintainer = ["Ivan Blagoev Topolsky <ivan.topolsky@bsse.ethz.ch>"]
