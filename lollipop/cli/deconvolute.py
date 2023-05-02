@@ -368,12 +368,26 @@ def deconvolute(
                     temp_df2 = temp_dfb
                 if temp_df2.size == 0:
                     continue
+
+                # remove uninformative mutations (present either always or never)
+                variants_columns = list(
+                    set(var_dates["var_dates"][mindate]) & set(temp_df2.columns)
+                )
+                temp_df2 = temp_df2[
+                    ~temp_df2[variants_columns]
+                    .sum(axis=1)
+                    .isin([0, len(variants_columns)])
+                ]
+                if temp_df2.size == 0:
+                    continue
+
                 # resampling weights
                 if bootstrap > 1:
                     weights = {"weights": temp_df2["resample_value"]}
                 else:
                     # just run one on everything
                     weights = {}
+
                 # deconvolution
                 t_kdec = ll.KernelDeconv(
                     temp_df2[var_dates["var_dates"][mindate] + ["undetermined"]],

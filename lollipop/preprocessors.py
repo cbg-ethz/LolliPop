@@ -31,6 +31,7 @@ class DataPreprocesser:
         end_date=None,
         no_date=False,
         remove_deletions=True,
+        make_complement=True,
     ):
         """General preprocessing steps"""
         # rename columns
@@ -100,9 +101,10 @@ class DataPreprocesser:
 
         # make complement of mutation signatures for undetermined cases
         self.df_tally.insert(self.df_tally.columns.size - 1, "undetermined", 0)
-        self.df_tally = pd.concat(
-            [self.df_tally, self.make_complement(self.df_tally, variants_columns)]
-        )
+        if make_complement:
+            self.df_tally = pd.concat(
+                [self.df_tally, self.make_complement(self.df_tally, variants_columns)]
+            )
 
         return self
 
