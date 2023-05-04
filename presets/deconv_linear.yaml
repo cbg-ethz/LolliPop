@@ -1,0 +1,4 @@
+# Deconvolution with linear reg / LS loss
+
+kernel_params:
+  bandwidth: 10

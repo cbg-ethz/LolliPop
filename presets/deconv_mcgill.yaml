@@ -1,0 +1,10 @@
+kernel: 'gaussian'
+kernel_params:
+  bandwidth: 1e-17
+
+confint: 'null'
+
+regressor: 'robust'
+
+#deconv_params:
+  #min_tol: 1e-3

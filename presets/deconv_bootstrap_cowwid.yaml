@@ -1,0 +1,11 @@
+bootstrap: 100
+
+kernel_params:
+  bandwidth: 10
+
+regressor: robust
+regressor_params:
+  f_scale: 0.01
+
+deconv_params:
+  min_tol: 1e-3

@@ -1,0 +1,15 @@
+# Wald confint, quasibinomial stratified
+
+kernel_params:
+  bandwidth: 30
+
+confint: wald
+confint_params:
+  quasi: True
+  method: strat
+
+deconv_params:
+  min_tol: 1e-3
+
+
+

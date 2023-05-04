@@ -1,0 +1,15 @@
+# Logit parametrized Wald confints
+
+kernel_params:
+  bandwidth: 30
+
+confint: wald
+confint_params:
+  scale: logit
+  pseudofrac: 0.01
+
+deconv_params:
+  min_tol: 1e-3
+
+
+

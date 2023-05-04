@@ -1,0 +1,17 @@
+# Logit parametrised confidence intervals with quasilikelihood, stratified
+
+kernel_params:
+  bandwidth: 30
+
+confint: wald
+confint_params:
+  quasi: True
+  scale: logit
+  pseudofrac: 0.01
+  method: strat
+
+deconv_params:
+  min_tol: 1e-3
+
+
+

@@ -2,8 +2,11 @@
 
 [![Bioconda package](https://img.shields.io/conda/dn/bioconda/lollipop.svg?label=Bioconda)](https://bioconda.github.io/recipes/lollipop/README.html)
 [![Docker container](https://quay.io/repository/biocontainers/lollipop/status)](https://quay.io/repository/biocontainers/lollipop)
+[![bio.tools](https://img.shields.io/badge/bio-tools-blue.svg)](https://bio.tools/LolliPop)
 
 LolliPop - a tool for Deconvolution for Wastewater Genomics
+
+(a component of [V-pipe](https://github.com/cbg-ethz/v-pipe))
 
 ## Description
 
@@ -224,7 +227,7 @@ type of kernel (box vs Gaussian) and its parameters (such as bandwidth),
 regressor used, using bootstrapping to generate confidence value, estimating
 confidence intervals with Wald, computing the estimates on a logit scale, etc.
 
-Various presets are available in the [presets/](presests/) subdirectory. 
+Various presets are available in the [presets/](presets/) subdirectory.
 
 For example:
 ```yaml
@@ -250,6 +253,7 @@ and/or ` end_date`), the subset of variants (`variants_list`) or locations
 (`locations_list`) to run deconvolution onto, variants column to delete
 (`variants_not_reported`) before processing any further, not considering the
 deletions (`remove_deletions`), etc. 
+see [example in config_preprint.yaml](config_preprint.yaml).
 
 #### Variants dates
 
@@ -281,6 +285,7 @@ var_dates:
   - BQ.1.1
   - XBB
 ```
+see [variants_dates_example.yaml](variants_dates_example.yaml).
 
 #### Running it
 
@@ -318,6 +323,9 @@ to be sent to online dashboards:
   }
 }
 ```
+
+The repository [cowwid](https://github.com/cbg-ethz/cowwid) contains real-world examples
+of downstream analysis of the output of LolliPop.
 
 ## Installation
 

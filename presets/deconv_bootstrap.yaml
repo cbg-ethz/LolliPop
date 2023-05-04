@@ -1,0 +1,12 @@
+# Bootstrap Confints
+
+kernel_params:
+  bandwidth: 30
+
+bootstrap: 1000
+
+deconv_params:
+  min_tol: 1e-3
+
+
+
