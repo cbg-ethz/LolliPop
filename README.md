@@ -374,9 +374,6 @@ conda activate lollipop
 
 Install _lollipop_ using pip:
 ```bash
-# Optionally: set the version string from the git currently cloned and checked out
-./version-from-git.sh
-
 # install both the python module and the cli
 pip install '.[cli]'
 # (this will autodetect dependencies already installed by conda)
@@ -406,8 +403,9 @@ LolliPop has its dependencies in a [pyproject.toml](pyproject.toml) managed
 with poetry and can be installed with it.
 
 ```bash
-# Optionally: set the version string from the git currently cloned and checked out
-poetry version "$(git describe --tags|sed -E 's/^v//;s/-([0-9]+)-.*$/.dev\1/')"
+# If not installed system-wide: manually run poetry-dynamic-versioning
+poetry-dynamic-versioning
+# (this sets the version string from the git currently cloned and checked out)
 
 poetry install --extras "cli"
 ```
