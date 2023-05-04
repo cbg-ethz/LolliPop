@@ -1,6 +1,6 @@
 # Notebooks
 
-This directory contains the Notebooks that have been used to generate the plots for the submission to Recomb 2003.
+This directory contains the Notebooks that have been used to generate the plots for the preprint.
 
 ## Jupyter kernel
 

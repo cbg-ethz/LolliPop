@@ -41,8 +41,8 @@ LolliPop provides several classes that can be used imported in Jupyter notebooks
 from lollipop import *
 ```
 
-See [notebook WwSmoothingKernel.ipynb](RECOMBpaper/WwSmoothingKernel.ipynb) 
-in directory [RECOMBpaper/](RECOMBpaper/)
+See [notebook WwSmoothingKernel.ipynb](preprint/WwSmoothingKernel.ipynb)
+in directory [preprint/](preprint/)
 
 ### Command line
 
