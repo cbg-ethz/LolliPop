@@ -3,6 +3,7 @@
 [![Bioconda package](https://img.shields.io/conda/dn/bioconda/lollipop.svg?label=Bioconda)](https://bioconda.github.io/recipes/lollipop/README.html)
 [![Docker container](https://quay.io/repository/biocontainers/lollipop/status)](https://quay.io/repository/biocontainers/lollipop)
 [![bio.tools](https://img.shields.io/badge/bio-tools-blue.svg)](https://bio.tools/LolliPop)
+[![Tests](https://github.com/cbg-ethz/LolliPop/actions/workflows/main.yaml/badge.svg)](https://github.com/cbg-ethz/LolliPop/actions/workflows/main.yaml)
 
 LolliPop - a tool for Deconvolution for Wastewater Genomics
 

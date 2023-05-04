@@ -3,7 +3,7 @@ name = "lollipop"
 version = "0.0.0"
 description = "tool for Deconvolution for Wastewater Genomics"
 authors = ["David Dreifuss <dadreifuss@gmail.com>", "Ivan Blagoev Topolsky <ivan.topolsky@bsse.ethz.ch>", "Matteo Carrara <carrara@nexus.ethz.ch>"]
-maintainer = ["Ivan Blagoev Topolsky <ivan.topolsky@bsse.ethz.ch>"]
+maintainers = ["Ivan Blagoev Topolsky <ivan.topolsky@bsse.ethz.ch>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/cbg-ethz/LolliPop"
@@ -31,8 +31,8 @@ lollipop = { callable = "lollipop.cli:cli", extras = ["cli"] }
 deconvolute =  { callable = "lollipop.deconvolute:deconvolute", extras = ["cli"] }
 
 [tool.poetry.dev-dependencies]
-black = "^22.1.0"
-#pytest = "^6.2.1"
+black = "^23.3.0"
+pytest = "^6.2.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]

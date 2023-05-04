@@ -1,3 +1,5 @@
+test_results.*
+
 # Compiled python modules.
 *.pyc
 
