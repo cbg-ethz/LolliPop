@@ -1,2 +1,2 @@
 .git_archival.json  export-subst
-tallymut_line_full.tsv filter=lfs diff=lfs merge=lfs -text
+tallymut_line_full.tsv.zst filter=lfs diff=lfs merge=lfs -text

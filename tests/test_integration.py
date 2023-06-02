@@ -19,6 +19,6 @@ def test_workflow():
             "--deconv-config=presets/deconv_linear.yaml",
             "--location=Zürich (ZH)",
             "--seed=42",
-            "preprint/data/tallymut_line_full.tsv",
+            "preprint/data/tallymut_line_full.tsv.zst",
         ]
     )
