@@ -17,6 +17,7 @@ python = "^3.10"
 numpy = ">=1.23"
 scipy = ">=1.9"
 pandas = ">=1.5"
+zstandard = { version = ">=0.20", optional = true }
 "ruamel.yaml" = { version = ">=0.15.80", optional = true }
 strictyaml = { version = ">=1.7", optional = true }
 tqdm = { version = ">=4.64", optional = true }
@@ -24,7 +25,7 @@ click = { version = "^8.0", optional = true }
 click-option-group = { version = "^0.5", optional = true }
 
 [tool.poetry.extras]
-cli = [ "ruamel.yaml", "strictyaml", "tqdm", "click", "click-option-group" ]
+cli = [ "zstandard", "ruamel.yaml", "strictyaml", "tqdm", "click", "click-option-group" ]
 
 [tool.poetry.scripts]
 lollipop = { callable = "lollipop.cli:cli", extras = ["cli"] }

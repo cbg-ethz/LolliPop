@@ -10,7 +10,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-            lfs: true
+            lfs: false
+            # NOTE to save on bandwidth costs, GitHub Action will not use GitHub's own LFS
+
+      - name: Fetch test-data
+        # NOTE to save on bandwidth costs, pull data from BSSE's GitLab LFS instead
+        run: |
+          git config --file .lfsconfig lfs.url "https://git.bsse.ethz.ch/cbg/viruses/lollipop.git/info/lfs"
+          git lfs install
+          git lfs pull
+          git lfs checkout
 
       - name: Set up Python
         uses: actions/setup-python@v4

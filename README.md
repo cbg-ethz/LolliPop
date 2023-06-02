@@ -7,7 +7,7 @@
 
 LolliPop - a tool for Deconvolution for Wastewater Genomics
 
-(a component of [V-pipe](https://github.com/cbg-ethz/v-pipe))
+The LolliPop tool is part of the [V-pipe workflow for analysing NGS data of short viral genomes](https://github.com/cbg-ethz/v-pipe).
 
 ## Description
 
