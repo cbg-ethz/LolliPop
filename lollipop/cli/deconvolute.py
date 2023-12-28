@@ -116,9 +116,10 @@ def deconvolute(
     tally_data,
 ):
     # load data
+    yaml = ruamel.yaml.YAML(typ="rt")
     print("load data")
     with open(variants_config, "r") as file:
-        conf_yaml = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
+        conf_yaml = yaml.load(file)
     variants_pangolin = conf_yaml["variants_pangolin"]
     variants_list = conf_yaml.get("variants_list", None)
     variants_not_reported = conf_yaml.get("variants_not_reported", [])
@@ -132,7 +133,7 @@ def deconvolute(
 
     # kernel deconvolution params
     with open(deconv_config, "r") as file:
-        deconv = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
+        deconv = yaml.load(file)
 
     # data
     try:
@@ -221,7 +222,7 @@ def deconvolute(
                 f"WARNING: running in `no_date` mode, still var_dates specified in {variants_dates}"
             )
         with open(variants_dates, "r") as file:
-            var_dates = ruamel.yaml.load(file, Loader=ruamel.yaml.Loader)
+            var_dates = yaml.load(file)
 
         all_var_dates = set(
             [var for lst in var_dates["var_dates"].values() for var in lst]
