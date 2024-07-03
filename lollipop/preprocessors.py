@@ -47,11 +47,12 @@ class DataPreprocesser:
         self.df_tally.dropna(
             subset=["frac", "date"] if not no_date else ["frac"], inplace=True
         )
-        # TODO cojac-based instead of SNV-bsed deconvolution
         # create column with mutation signature
-        self.df_tally["mutations"] = (
-            self.df_tally["pos"].astype(str) + self.df_tally["base"]
-        )
+        if ("base" in self.df_tally.columns) and ("pos" in self.df_tally.columns):
+            # NOTE if cojac-based instead of SNV-bsed deconvolution: there is no single mutation
+            self.df_tally["mutations"] = (
+                self.df_tally["pos"].astype(str) + self.df_tally["base"]
+            )
         # convert date string to date object
         # (also convert any dummy date of 'no_date'
         self.df_tally["date"] = pd.to_datetime(self.df_tally["date"])
@@ -63,7 +64,14 @@ class DataPreprocesser:
                 self.df_tally = self.df_tally[(self.df_tally["date"] < end_date)]
         # remove deletions
         if remove_deletions:
-            self.df_tally = self.df_tally[~(self.df_tally["base"] == "-")]
+            if "base" in self.df_tally.columns:
+                self.df_tally = self.df_tally[~(self.df_tally["base"] == "-")]
+            else:
+                # NOTE if cojac-based instead of SNV-bsed deconvolution: there is no single mutation
+                print(
+                    f"Warning, 'remove_deletions' is set in configuration, but no 'base' column is present in columns {self.df_tally.columns}",
+                    file=sys.stderr,
+                )
 
         # df_data = df_data[df_data.columns.difference(['pos', 'gene', 'base'], sort=False)]
 
