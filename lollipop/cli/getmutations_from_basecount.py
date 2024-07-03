@@ -45,10 +45,12 @@ def scan_basecnt(basecnt, tsvbase, mut):
                             # -1 : 1-based to 0-based
                             basecount.loc[x.position - (1 - tsvbase)]["cov"],
                             basecount.loc[x.position - (1 - tsvbase)][x.variant],
-                            basecount.loc[x.position - (1 - tsvbase)][x.variant]
-                            / basecount.loc[x.position - (1 - tsvbase)]["cov"]
-                            if basecount.loc[x.position - (1 - tsvbase)]["cov"]
-                            else np.nan,
+                            (
+                                basecount.loc[x.position - (1 - tsvbase)][x.variant]
+                                / basecount.loc[x.position - (1 - tsvbase)]["cov"]
+                                if basecount.loc[x.position - (1 - tsvbase)]["cov"]
+                                else np.nan
+                            ),
                         ],
                         index=[
                             "gene",

@@ -519,13 +519,19 @@ def deconvolute(
             .reset_index()
         )
         output_df.columns = [
-            col
-            if type(col) is not tuple
-            else col[1]
-            if col[0] == "proportion"
-            else f"{col[1]}_{col[0][len('proportion'):]}"
-            if len(col[0]) > len("proportion")
-            else "".join(col)
+            (
+                col
+                if type(col) is not tuple
+                else (
+                    col[1]
+                    if col[0] == "proportion"
+                    else (
+                        f"{col[1]}_{col[0][len('proportion'):]}"
+                        if len(col[0]) > len("proportion")
+                        else "".join(col)
+                    )
+                )
+            )
             for col in output_df.columns.values
         ]
     else:
