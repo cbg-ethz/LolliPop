@@ -116,75 +116,8 @@ class DataPreprocesser:
 
         return self
 
-    def filter_mutations(self):
-        """very temporary function, to filter out hardcoded problematic mutations"""
+    def filter_mutations(self, filters=None):
+        """filter out hardcoded problematic mutations"""
 
-        # HACK hand hardcoded
-        # TODO detect problematic mutations
-        self.df_tally = self.df_tally[
-            ~self.df_tally["mutations"].isin(
-                ["28461G", "11201G", "26801C"] + ["-28461G", "-11201G", "-26801C"]
-            )
-        ]
-
-        self.df_tally = self.df_tally[
-            ~(
-                (pd.to_datetime(self.df_tally.date) > np.datetime64("2021-11-20"))
-                & (self.df_tally.pos >= 22428)
-                & (self.df_tally.pos <= 22785)
-            )
-        ]  # amplicon75
-        self.df_tally = self.df_tally[
-            ~(
-                (pd.to_datetime(self.df_tally.date) > np.datetime64("2021-11-20"))
-                & (self.df_tally.pos >= 22677)
-                & (self.df_tally.pos <= 23028)
-            )
-        ]  # amplicon76
-        self.df_tally = self.df_tally[
-            ~(
-                (pd.to_datetime(self.df_tally.date) > np.datetime64("2021-11-20"))
-                & (self.df_tally.pos >= 22974)
-                & (self.df_tally.pos <= 23327)
-            )
-        ]  # amplicon77
-        self.df_tally = self.df_tally[
-            ~(
-                (pd.to_datetime(self.df_tally.date) > np.datetime64("2021-11-20"))
-                & (self.df_tally.pos >= 26277)
-                & (self.df_tally.pos <= 26635)
-            )
-        ]  # amplicon88
-        self.df_tally = self.df_tally[
-            ~(
-                (pd.to_datetime(self.df_tally.date) > np.datetime64("2021-11-20"))
-                & (self.df_tally.pos >= 26895)
-                & (self.df_tally.pos <= 27256)
-            )
-        ]  # amplicon90
-        self.df_tally = self.df_tally[
-            ~(
-                (pd.to_datetime(self.df_tally.date) > np.datetime64("2021-11-20"))
-                & (self.df_tally.pos == 26709)
-            )
-        ]  # other
-        self.df_tally = self.df_tally[
-            ~(
-                (pd.to_datetime(self.df_tally.date) > np.datetime64("2021-11-20"))
-                & (self.df_tally.pos == 27807)
-            )
-        ]  # other
-        self.df_tally = self.df_tally[
-            ~(
-                (pd.to_datetime(self.df_tally.date) > np.datetime64("2021-11-20"))
-                & (self.df_tally.pos == 2832)
-            )
-        ]  # other
-        self.df_tally = self.df_tally[
-            ~(
-                (pd.to_datetime(self.df_tally.date) > np.datetime64("2021-11-20"))
-                & (self.df_tally.pos == 10449)
-            )
-        ]  # other
-
+        # HACK completely disable filters
         return self
