@@ -458,7 +458,7 @@ def deconvolute(
             .groupby(agg_columns)
             .agg(
                 [
-                    np.mean,
+                    "mean",
                     lambda x: np.quantile(x, q=0.025),
                     lambda x: np.quantile(x, q=0.975),
                 ]
