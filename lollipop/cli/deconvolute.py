@@ -151,6 +151,8 @@ def deconvolute(
             filters = yaml.load(file)
 
         print(f"{len(filters)} filter{ '' if len(filters) == 1 else 's' } loaded")
+    else:
+        filters = None
 
     # data
     try:

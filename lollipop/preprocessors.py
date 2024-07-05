@@ -121,15 +121,15 @@ class DataPreprocesser:
 
     def filter_mutations(self, filters=None):
         """filter out hardcoded problematic mutations"""
-        if filters is None:
+        if not filters:
             return self
 
         types = self.df_tally.dtypes
 
         rxprser = re.compile(
-            r"^ *(?:(?P<col>"
+            r"^ *(?P<qc>['\"]?)(?:(?P<col>"
             + r"|".join(self.df_tally.columns)
-            + r")|(?P<bad>\w+)) *(?P<op>in|[<>=~!]*) *(?P<qv>['\"]?)(?P<val>.+)(?P=qv) *$"
+            + r")|(?P<bad>\w+))(?P=qc) *(?P<op>in|[<>=~!]*) *(?P<qv>['\"]?)(?P<val>.+)(?P=qv) *$"
         )
 
         def apply_filter_statement(name, fs):
