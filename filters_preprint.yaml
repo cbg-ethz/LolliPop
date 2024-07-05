@@ -1,0 +1,53 @@
+bad_mutations: 
+  - proto v3
+  - mutations in [ 28461G, 11201G, 26801C, -28461G, -11201G, -26801C ]
+
+amplicon75:
+  - proto v3
+  - date > 2021-11-20
+  - pos >= 22428
+  - pos <= 22785
+
+amplicon76:
+  - proto v3
+  - date > 2021-11-20
+  - pos >= 22677
+  - pos <= 23028
+
+amplicon77:
+  - proto v3
+  - date > 2021-11-20
+  - pos >= 22974
+  - pos <= 23327
+
+amplicon88:
+  - proto v3
+  - date > 2021-11-20
+  - pos >= 26277
+  - pos <= 26635
+
+amplicon90:
+  - proto v3
+  - date > 2021-11-20
+  - pos >= 26895
+  - pos <= 27256
+
+other_0:
+  - proto v3
+  - date > 2021-11-20
+  - pos == 26709
+
+other_1:
+  - proto v3
+  - date > 2021-11-20
+  - pos == 27807
+
+other_2:
+  - proto v3
+  - date > 2021-11-20
+  - pos == 2832
+
+other_3:
+  - proto v3
+  - date > 2021-11-20
+  - pos == 10449

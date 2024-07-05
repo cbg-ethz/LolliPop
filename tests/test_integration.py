@@ -17,6 +17,7 @@ def test_workflow():
             "--fmt-columns",
             "--variants-config=config_preprint.yaml",
             "--deconv-config=presets/deconv_linear.yaml",
+            "--filters=filters_preprint.yaml",
             "--location=Zürich (ZH)",
             "--seed=42",
             "preprint/data/tallymut_line_full.tsv.zst",

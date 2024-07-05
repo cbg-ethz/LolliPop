@@ -95,6 +95,15 @@ regressors = {
     help="Name(s) of location/wastewater treatment plant/catchment area to process",
 )
 @click.option(
+    "--filters",
+    "-fl",
+    metavar="YAML",
+    required=False,
+    default=None,
+    type=str,
+    help="List of filters for removing problematic mutations from tally",
+)
+@click.option(
     "--seed",
     "-s",
     metavar="SEED",
@@ -109,6 +118,7 @@ def deconvolute(
     variants_dates,
     deconv_config,
     loc,
+    filters,
     seed,
     output,
     fmt_columns,
@@ -134,6 +144,13 @@ def deconvolute(
     # kernel deconvolution params
     with open(deconv_config, "r") as file:
         deconv = yaml.load(file)
+
+    # problematic mutation filters
+    if filters:
+        with open(filters, "r") as file:
+            filters = yaml.load(file)
+
+        print(f"{len(filters)} filter{ '' if len(filters) == 1 else 's' } loaded")
 
     # data
     try:
@@ -287,7 +304,7 @@ def deconvolute(
         no_date=no_date,
         remove_deletions=remove_deletions,
     )
-    preproc = preproc.filter_mutations()
+    preproc = preproc.filter_mutations(filters=filters)
 
     print("deconvolve all")
     np.random.seed(seed)

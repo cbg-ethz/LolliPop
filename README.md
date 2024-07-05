@@ -134,6 +134,8 @@ Options:
   -k, --deconv-config, --dec YAML
                                   Configuration of parameters for kernel
                                   deconvolution  [required]
+  --filters YAML                  List of filters for removing problematic
+                                  mutations from tally
   -l, --loc, --location, --wwtp, --catchment NAME
                                   Name(s) of location/wastewater treatment
                                   plant/catchment area to process
@@ -287,6 +289,50 @@ var_dates:
   - XBB
 ```
 see [variants_dates_example.yaml](variants_dates_example.yaml).
+
+#### Filters (optional)
+
+Some mutations might be problematic and need to be taken out -- e.g. 
+due to drop-outs in the multiplex PCR amplification, they do not show up in the data
+and this could be misinterpreted by LolliPop as proof of absence of a variant.
+This optional file contains a collection of filters.
+Each filter has a list of statements with the following syntax:
+```text
+- <column> <op> <value>
+```
+Valid _op_ are:
+- `==` on that line, the value in _column_ is exactly _value_
+  - for simple strings this can be omitted: `- proto v3` is synonymous with `- proto == v3`
+- `<=` the value is less than or equal to _value_
+- `>=` the value is greater than or equal to _value_
+- `<` the value is less than _value_
+- `>` the value is greater than _value_
+- `!=` the value is **not** _value_
+- `in` the value is found in the list specidied in _value_
+- `~` the value matches the regular expression in _value_
+  - regex can be quoted using `/` or `@`
+- `!~` the vlue does **not** matche the regular expression in _value_
+
+Any arbitrary column found in the input file can be used.
+
+All statements of a filter are combined with a logical `and` and matching lines are removed from the tally table.
+
+Filters are processed in the order found in the YAML file.
+
+For example:
+```yaml
+# filter to remove test samples
+remove_test:
+- sample ~ /^Test/
+
+# filter to remove an amplicon that has drop-outs
+amplicon75:
+  - proto v3
+  - date > 2021-11-20
+  - pos >= 22428
+  - pos <= 22785
+```
+see [example in filters_preprint.yaml](filters_preprint.yaml).
 
 #### Running it
 

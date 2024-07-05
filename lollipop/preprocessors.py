@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
+from functools import reduce
+import re
 import sys
+from pandas.api.types import is_numeric_dtype
 
 
 class DataPreprocesser:
@@ -118,6 +121,93 @@ class DataPreprocesser:
 
     def filter_mutations(self, filters=None):
         """filter out hardcoded problematic mutations"""
+        if filters is None:
+            return self
+
+        types = self.df_tally.dtypes
+
+        rxprser = re.compile(
+            r"^ *(?:(?P<col>"
+            + r"|".join(self.df_tally.columns)
+            + r")|(?P<bad>\w+)) *(?P<op>in|[<>=~!]*) *(?P<qv>['\"]?)(?P<val>.+)(?P=qv) *$"
+        )
+
+        def apply_filter_statement(name, fs):
+            """parse a single statement from a filter and apply it, returning a boolean series"""
+            m = rxprser.search(fs)
+            assert m, f"Cannot parse statement <{fs}> in filter {name}"
+            m = m.groupdict()
+
+            assert m[
+                "col"
+            ], f"bad column name {m['bad']}, not in list: {self.df_tally.columns}, while parsing statement <{fs}> in filter {name}"
+
+            # HACK handle 'date' column differently, to force datatypes
+            col = (
+                pd.to_datetime(self.df_tally["date"])
+                if "date" == m["col"]
+                else self.df_tally[m["col"]]
+            )
+            val = (
+                np.datetime64(m["val"])
+                if "date" == m["col"]
+                else (
+                    pd.to_numeric(m["val"])
+                    if is_numeric_dtype(types[m["col"]])
+                    else m["val"]
+                )
+            )
+
+            # apply operator
+            match m["op"]:
+                case "=" | "==" | "" as e:
+                    if e == "":
+                        assert (
+                            " " not in val
+                        ), "Do not use values with space <{val}> when using no operator (implicit 'equals'). (while parsing statement <{fs}> in filter {name})"
+                    return col == val
+                case "!=" | "!":
+                    return col != val
+                case "<":
+                    return col < val
+                case "<=" | "=<":
+                    return col <= val
+                case ">=" | ">=":
+                    return col >= val
+                case ">":
+                    return col > val
+                case "in":
+                    # unpack list
+                    return col.isin(
+                        [
+                            v.strip("\"' ")
+                            for v in val.lstrip("[ ").rstrip(" ]").split(",")
+                        ]
+                    )
+                case "~" | "=~" | "~=":
+                    return col.str.contains(
+                        val[1, -2] if val[0] == val[-1] in "/@" else val
+                    )
+                case "!~" | "~!":
+                    return ~(
+                        col.str.contains(
+                            val[1, -2] if val[0] == val[-1] in "/@" else val
+                        )
+                    )
+                case _ as o:
+                    raise ValueError(
+                        f"unknown operator {o}, while parsing statement <{fs}> in filter {name}"
+                    )
+
+        for name, fl in filters.items():
+            print(f"filter {name}")
+
+            self.df_tally = self.df_tally[
+                ~reduce(
+                    (lambda x, y: x & y),
+                    [apply_filter_statement(name, fstatmt) for fstatmt in fl],
+                )
+            ]
 
         # HACK completely disable filters
         return self
