@@ -186,12 +186,14 @@ class DataPreprocesser:
                     )
                 case "~" | "=~" | "~=":
                     return col.str.contains(
-                        val[1, -2] if val[0] == val[-1] in "/@" else val
+                        val[1:-1] if not m["qv"] and val[0] == val[-1] in "/@" else val
                     )
                 case "!~" | "~!":
                     return ~(
                         col.str.contains(
-                            val[1, -2] if val[0] == val[-1] in "/@" else val
+                            val[1:-1]
+                            if not m["qv"] and val[0] == val[-1] in "/@"
+                            else val
                         )
                     )
                 case _ as o:

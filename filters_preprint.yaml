@@ -1,4 +1,7 @@
-bad_mutations: 
+controls:
+  - sample ~ /^control/
+
+bad_mutations:
   - proto v3
   - mutations in [ 28461G, 11201G, 26801C, -28461G, -11201G, -26801C ]
 
