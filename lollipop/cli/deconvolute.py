@@ -18,6 +18,10 @@ from typing import List, Tuple, Union
 
 import dask 
 
+from dask.distributed import Client
+
+client = Client(threads_per_worker=6, n_workers=1)
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -36,7 +40,7 @@ regressors = {
 }
 
 
-
+@dask.delayed
 def _deconvolute_bootstrap(
         location: str, 
         preproc: ll.DataPreprocesser, 
@@ -552,7 +556,7 @@ def deconvolute(
     # CORE DECONVOLUTION
     # iterate over locations
     # Create delayed objects for each location
-    delayed_results = [dask.delayed(_deconvolute_bootstrap)(
+    delayed_results = [_deconvolute_bootstrap(
         location=location,
         preproc=preproc,
         bootstrap=bootstrap,
@@ -573,6 +577,7 @@ def deconvolute(
     ) for location in locations_list]
 
     # Compute all results in parallel
+    logging.info("Dask Multiprocessing Dashboard link: %s", client.dashboard_link)
     all_deconv = dask.compute(*delayed_results)
 
     # Flatten the results if necessary
