@@ -14,6 +14,10 @@ import sys
 import logging
 import time
 
+from typing import List, Tuple, Union 
+
+from multiprocessing import Pool
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -30,6 +34,185 @@ regressors = {
     "nnls": ll.NnlsReg,
     "robust": ll.RobustReg,
 }
+
+
+
+def _deconvolute_bootstrap(
+        location: str, 
+        preproc: ll.DataPreprocesser, 
+        bootstrap : int, 
+        locations_list: List, 
+        no_loc: bool, 
+        no_date: bool, 
+        date_intervals: List[Tuple],
+        var_dates: dict,
+        kernel: Union[ll.GaussianKernel, ll.BoxKernel],
+        kernel_params: dict,
+        regressor: Union[ll.NnlsReg, ll.RobustReg],
+        regressor_params: dict,
+        confint: Union[ll.confints.NullConfint, ll.confints.WaldConfint],
+        confint_params: dict,
+        deconv_params: dict,
+        have_confint: bool,
+        confint_name: str
+        ) -> List[pd.DataFrame]:
+    """
+    Deconvolute the data for a given location and bootstrap iteration.
+    
+    Parameters
+    ----------
+    location : str
+        The location to deconvolute.
+    preproc : ll.DataPreprocesser
+        The preprocessed data object.
+    bootstrap : int
+        The number of bootstrap iterations to perform.
+    locations_list : List
+        The list of locations to deconvolute in total. Used for progress bar. 
+        TODO: consider removing this parameter.
+    no_loc : bool
+        Whether to ignore location information.
+    no_date : bool
+        Whether to ignore date information.
+    date_intervals : List[Tuple]
+        The date intervals to deconvolute.
+    var_dates : dict
+        The variants to scan per periods.
+    kernel : ll.Kernel
+        The kernel to use for deconvolution.
+    kernel_params : dict
+        The parameters for the kernel.
+    regressor : ll.Regressor
+        The regressor to use for deconvolution.
+    regressor_params : dict
+        The parameters for the regressor.
+    confint : ll.Confint
+        The confidence interval to use for deconvolution.
+    confint_params : dict
+        The parameters for the confidence interval.
+    deconv_params : dict
+        The parameters for the deconvolution.
+    have_confint : bool
+        Whether to use a confidence interval.
+    confint_name : str
+        The name of the confidence interval.
+    
+    Returns
+    -------
+    List[pd.DataFrame]
+        The deconvolution results for the location and bootstrap iterations.
+    """
+
+    # deconvolution results
+    deconv = []
+
+    if bootstrap <= 1 and len(date_intervals) <= 1:
+        tqdm.write(location)
+
+    # select the current location
+    loc_df = (
+        preproc.df_tally[preproc.df_tally["location"] == location]
+        if not no_loc
+        else preproc.df_tally
+    )
+    # print the memory usage of the current location
+    logging.info(f"memory usage: {loc_df.memory_usage().sum() / 1024**2} MB")
+
+    for b in (
+        trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
+        if bootstrap > 1
+        else [0]
+    ):
+        logging.info(f"bootstrap: {b}")
+        start_time_b = time.time()
+        if bootstrap > 1:
+            # resample if we're doing bootstrapping
+            temp_dfb = ll.resample_mutations(loc_df, loc_df.mutations.unique())[0]
+        else:
+            # just run one on everything
+            temp_dfb = loc_df
+
+        # print the memory usage of the current bootstrap
+        logging.info(f"memory usage: {temp_dfb.memory_usage().sum() / 1024**2} MB")
+
+        for mindate, maxdate in (
+            tqdm(date_intervals, desc=location)
+            if bootstrap <= 1 and len(date_intervals) > 1
+            else date_intervals
+        ):
+            logging.info(f"date: {mindate} - {maxdate}")
+            start_time_d = time.time()
+            if not no_date:
+                # filter by time period for period-specific variants list
+                if maxdate is not None:
+                    temp_df2 = temp_dfb[
+                        temp_dfb.date.between(mindate, maxdate, inclusive="left")
+                    ]
+                else:
+                    temp_df2 = temp_dfb[temp_dfb.date >= mindate]
+            else:
+                # no date => no filtering
+                temp_df2 = temp_dfb
+            if temp_df2.size == 0:
+                continue
+            # print the memory usage of the current date
+            logging.info(f"memory usage: {temp_df2.memory_usage().sum() / 1024**2} MB")
+
+            # remove uninformative mutations (present either always or never)
+            variants_columns = list(
+                set(var_dates["var_dates"][mindate]) & set(temp_df2.columns)
+            )
+            temp_df2 = temp_df2[
+                ~temp_df2[variants_columns]
+                .sum(axis=1)
+                .isin([0, len(variants_columns)])
+            ]
+            if temp_df2.size == 0:
+                continue
+
+            # resampling weights
+            if bootstrap > 1:
+                weights = {"weights": temp_df2["resample_value"]}
+            else:
+                # just run one on everything
+                weights = {}
+
+            # deconvolution
+            t_kdec = ll.KernelDeconv(
+                temp_df2[var_dates["var_dates"][mindate] + ["undetermined"]],
+                temp_df2["frac"],
+                temp_df2["date"],
+                kernel=kernel(**kernel_params),
+                reg=regressor(**regressor_params),
+                confint=confint(**confint_params),
+                **weights,
+            )
+            t_kdec = t_kdec.deconv_all(**deconv_params)
+            if have_confint:
+                # with conf int
+                res = t_kdec.fitted.copy()
+                res["location"] = location
+                res["estimate"] = "MSE"
+                deconv.append(res)
+
+                res_lower = t_kdec.conf_bands["lower"].copy()
+                res_lower["location"] = location
+                res_lower["estimate"] = f"{confint_name}_lower"
+                deconv.append(res_lower)
+
+                res_upper = t_kdec.conf_bands["upper"].copy()
+                res_upper["location"] = location
+                res_upper["estimate"] = f"{confint_name}_upper"
+                deconv.append(res_upper)
+            else:
+                # without conf int
+                res = t_kdec.fitted
+                res["location"] = location
+                deconv.append(res)
+            logging.info(f"date took {time.time() - start_time_d} seconds")
+        logging.info(f"bootstrap took {time.time() - start_time_b} seconds")
+
+        return deconv
 
 
 @click.command(
@@ -366,119 +549,37 @@ def deconvolute(
     # print the memory usage of the dataframe
     logging.info(f"memory usage: {df_tally.memory_usage().sum() / 1024**2} MB")
 
-    # do it
+    # CORE DECONVOLUTION
+    # iterate over locations
     for location in tqdm(locations_list) if len(locations_list) > 1 else locations_list:
         logging.info(f"location: {location}")
         start_time_loc = time.time()
 
-        if bootstrap <= 1 and len(date_intervals) <= 1:
-            tqdm.write(location)
-        # select the current location
-        loc_df = (
-            preproc.df_tally[preproc.df_tally["location"] == location]
-            if not no_loc
-            else preproc.df_tally
-        )
-        # print the memory usage of the current location
-        logging.info(f"memory usage: {loc_df.memory_usage().sum() / 1024**2} MB")
+        deconv_df_loc = _deconvolute_bootstrap(location = location,
+                                                preproc = preproc,
+                                                bootstrap = bootstrap,
+                                                locations_list = locations_list,
+                                                no_loc = no_loc,
+                                                no_date = no_date,
+                                                date_intervals = date_intervals,
+                                                var_dates = var_dates,
+                                                kernel = kernel,
+                                                kernel_params = kernel_params,
+                                                regressor = regressor,
+                                                regressor_params = regressor_params,
+                                                confint = confint,
+                                                confint_params = confint_params,
+                                                deconv_params = deconv_params,
+                                                have_confint = have_confint,
+                                                confint_name = confint_name
+                                                )
+        
+        all_deconv.extend(deconv_df_loc)
 
-        for b in (
-            trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
-            if bootstrap > 1
-            else [0]
-        ):
-            logging.info(f"bootstrap: {b}")
-            start_time_b = time.time()
-            if bootstrap > 1:
-                # resample if we're doing bootstrapping
-                temp_dfb = ll.resample_mutations(loc_df, loc_df.mutations.unique())[0]
-            else:
-                # just run one on everything
-                temp_dfb = loc_df
-
-            # print the memory usage of the current bootstrap
-            logging.info(f"memory usage: {temp_dfb.memory_usage().sum() / 1024**2} MB")
-
-            for mindate, maxdate in (
-                tqdm(date_intervals, desc=location)
-                if bootstrap <= 1 and len(date_intervals) > 1
-                else date_intervals
-            ):
-                logging.info(f"date: {mindate} - {maxdate}")
-                start_time_d = time.time()
-                if not no_date:
-                    # filter by time period for period-specific variants list
-                    if maxdate is not None:
-                        temp_df2 = temp_dfb[
-                            temp_dfb.date.between(mindate, maxdate, inclusive="left")
-                        ]
-                    else:
-                        temp_df2 = temp_dfb[temp_dfb.date >= mindate]
-                else:
-                    # no date => no filtering
-                    temp_df2 = temp_dfb
-                if temp_df2.size == 0:
-                    continue
-                # print the memory usage of the current date
-                logging.info(f"memory usage: {temp_df2.memory_usage().sum() / 1024**2} MB")
-
-                # remove uninformative mutations (present either always or never)
-                variants_columns = list(
-                    set(var_dates["var_dates"][mindate]) & set(temp_df2.columns)
-                )
-                temp_df2 = temp_df2[
-                    ~temp_df2[variants_columns]
-                    .sum(axis=1)
-                    .isin([0, len(variants_columns)])
-                ]
-                if temp_df2.size == 0:
-                    continue
-
-                # resampling weights
-                if bootstrap > 1:
-                    weights = {"weights": temp_df2["resample_value"]}
-                else:
-                    # just run one on everything
-                    weights = {}
-
-                # deconvolution
-                t_kdec = ll.KernelDeconv(
-                    temp_df2[var_dates["var_dates"][mindate] + ["undetermined"]],
-                    temp_df2["frac"],
-                    temp_df2["date"],
-                    kernel=kernel(**kernel_params),
-                    reg=regressor(**regressor_params),
-                    confint=confint(**confint_params),
-                    **weights,
-                )
-                t_kdec = t_kdec.deconv_all(**deconv_params)
-                if have_confint:
-                    # with conf int
-                    res = t_kdec.fitted.copy()
-                    res["location"] = location
-                    res["estimate"] = "MSE"
-                    all_deconv.append(res)
-
-                    res_lower = t_kdec.conf_bands["lower"].copy()
-                    res_lower["location"] = location
-                    res_lower["estimate"] = f"{confint_name}_lower"
-                    all_deconv.append(res_lower)
-
-                    res_upper = t_kdec.conf_bands["upper"].copy()
-                    res_upper["location"] = location
-                    res_upper["estimate"] = f"{confint_name}_upper"
-                    all_deconv.append(res_upper)
-                else:
-                    # without conf int
-                    res = t_kdec.fitted
-                    res["location"] = location
-                    all_deconv.append(res)
-                logging.info(f"date took {time.time() - start_time_d} seconds")
-            logging.info(f"bootstrap took {time.time() - start_time_b} seconds")        
         logging.info(f"location took {time.time() - start_time_loc} seconds")
     logging.info(f"all locations took {time.time() - start_time} seconds")
     print("post-process data")
-    deconv_df = pd.concat(all_deconv)
+    deconv_df = pd.concat(all_deconv) # what does this do.
     if not have_confint:
         deconv_df = deconv_df.fillna(0)
 
