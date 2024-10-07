@@ -212,7 +212,7 @@ def _deconvolute_bootstrap(
             logging.info(f"date took {time.time() - start_time_d} seconds")
         logging.info(f"bootstrap took {time.time() - start_time_b} seconds")
 
-        return deconv
+    return deconv
 
 
 @click.command(
