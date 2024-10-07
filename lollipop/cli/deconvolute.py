@@ -11,6 +11,12 @@ import json
 import os
 import sys
 
+import logging
+import time
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 kernels = {
     "gaussian": ll.GaussianKernel,
@@ -348,8 +354,23 @@ def deconvolute(
    params: {deconv_params}"""
     )
 
+    # print out the iterations that will be done
+    logging.info(f"locations: {locations_list}")
+    logging.info(f"bootstrap: {bootstrap}")
+    logging.info(f"date_intervals: {date_intervals}")
+    
+    # starting computation
+    logging.info("starting computation")
+    # start a timer
+    start_time = time.time()
+    # print the memory usage of the dataframe
+    logging.info(f"memory usage: {df_tally.memory_usage().sum() / 1024**2} MB")
+
     # do it
     for location in tqdm(locations_list) if len(locations_list) > 1 else locations_list:
+        logging.info(f"location: {location}")
+        start_time_loc = time.time()
+
         if bootstrap <= 1 and len(date_intervals) <= 1:
             tqdm.write(location)
         # select the current location
@@ -358,11 +379,16 @@ def deconvolute(
             if not no_loc
             else preproc.df_tally
         )
+        # print the memory usage of the current location
+        logging.info(f"memory usage: {loc_df.memory_usage().sum() / 1024**2} MB")
+
         for b in (
             trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
             if bootstrap > 1
             else [0]
         ):
+            logging.info(f"bootstrap: {b}")
+            start_time_b = time.time()
             if bootstrap > 1:
                 # resample if we're doing bootstrapping
                 temp_dfb = ll.resample_mutations(loc_df, loc_df.mutations.unique())[0]
@@ -370,11 +396,16 @@ def deconvolute(
                 # just run one on everything
                 temp_dfb = loc_df
 
+            # print the memory usage of the current bootstrap
+            logging.info(f"memory usage: {temp_dfb.memory_usage().sum() / 1024**2} MB")
+
             for mindate, maxdate in (
                 tqdm(date_intervals, desc=location)
                 if bootstrap <= 1 and len(date_intervals) > 1
                 else date_intervals
             ):
+                logging.info(f"date: {mindate} - {maxdate}")
+                start_time_d = time.time()
                 if not no_date:
                     # filter by time period for period-specific variants list
                     if maxdate is not None:
@@ -388,6 +419,8 @@ def deconvolute(
                     temp_df2 = temp_dfb
                 if temp_df2.size == 0:
                     continue
+                # print the memory usage of the current date
+                logging.info(f"memory usage: {temp_df2.memory_usage().sum() / 1024**2} MB")
 
                 # remove uninformative mutations (present either always or never)
                 variants_columns = list(
@@ -440,7 +473,10 @@ def deconvolute(
                     res = t_kdec.fitted
                     res["location"] = location
                     all_deconv.append(res)
-
+                logging.info(f"date took {time.time() - start_time_d} seconds")
+            logging.info(f"bootstrap took {time.time() - start_time_b} seconds")        
+        logging.info(f"location took {time.time() - start_time_loc} seconds")
+    logging.info(f"all locations took {time.time() - start_time} seconds")
     print("post-process data")
     deconv_df = pd.concat(all_deconv)
     if not have_confint:
