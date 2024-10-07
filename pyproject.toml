@@ -23,6 +23,7 @@ strictyaml = { version = ">=1.7", optional = true }
 tqdm = { version = ">=4.64", optional = true }
 click = { version = "^8.0", optional = true }
 click-option-group = { version = "^0.5", optional = true }
+dask = "^2024.9.1"
 
 [tool.poetry.extras]
 cli = [ "zstandard", "ruamel.yaml", "strictyaml", "tqdm", "click", "click-option-group" ]

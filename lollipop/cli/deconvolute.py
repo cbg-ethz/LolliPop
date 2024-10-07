@@ -8,7 +8,7 @@ from tqdm import tqdm, trange
 import click
 import ruamel.yaml
 import json
-import os
+
 import sys
 
 import logging
@@ -16,7 +16,7 @@ import time
 
 from typing import List, Tuple, Union 
 
-from multiprocessing import Pool
+import dask 
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -551,32 +551,33 @@ def deconvolute(
 
     # CORE DECONVOLUTION
     # iterate over locations
-    for location in tqdm(locations_list) if len(locations_list) > 1 else locations_list:
-        logging.info(f"location: {location}")
-        start_time_loc = time.time()
+    # Create delayed objects for each location
+    delayed_results = [dask.delayed(_deconvolute_bootstrap)(
+        location=location,
+        preproc=preproc,
+        bootstrap=bootstrap,
+        locations_list=locations_list,
+        no_loc=no_loc,
+        no_date=no_date,
+        date_intervals=date_intervals,
+        var_dates=var_dates,
+        kernel=kernel,
+        kernel_params=kernel_params,
+        regressor=regressor,
+        regressor_params=regressor_params,
+        confint=confint,
+        confint_params=confint_params,
+        deconv_params=deconv_params,
+        have_confint=have_confint,
+        confint_name=confint_name
+    ) for location in locations_list]
 
-        deconv_df_loc = _deconvolute_bootstrap(location = location,
-                                                preproc = preproc,
-                                                bootstrap = bootstrap,
-                                                locations_list = locations_list,
-                                                no_loc = no_loc,
-                                                no_date = no_date,
-                                                date_intervals = date_intervals,
-                                                var_dates = var_dates,
-                                                kernel = kernel,
-                                                kernel_params = kernel_params,
-                                                regressor = regressor,
-                                                regressor_params = regressor_params,
-                                                confint = confint,
-                                                confint_params = confint_params,
-                                                deconv_params = deconv_params,
-                                                have_confint = have_confint,
-                                                confint_name = confint_name
-                                                )
-        
-        all_deconv.extend(deconv_df_loc)
+    # Compute all results in parallel
+    all_deconv = dask.compute(*delayed_results)
 
-        logging.info(f"location took {time.time() - start_time_loc} seconds")
+    # Flatten the results if necessary
+    all_deconv = [item for sublist in all_deconv for item in sublist]
+
     logging.info(f"all locations took {time.time() - start_time} seconds")
     print("post-process data")
     deconv_df = pd.concat(all_deconv) # what does this do.
