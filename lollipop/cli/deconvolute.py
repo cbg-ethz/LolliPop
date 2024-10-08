@@ -18,10 +18,10 @@ from typing import List, Tuple, Union
 
 import multiprocessing
 
-num_cores = 8
+num_cores = 1
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 kernels = {
@@ -38,9 +38,13 @@ regressors = {
 }
 
 def _deconvolute_bootstrap_wrapper(args):
+    """
+    Wrapper for the deconvolute bootstrap function to allow for parallel processing.
+    """
     return _deconvolute_bootstrap(*args)
 
 def _deconvolute_bootstrap(
+        num_cores: int,
         location: str, 
         preproc: ll.DataPreprocesser, 
         bootstrap : int, 
@@ -64,6 +68,9 @@ def _deconvolute_bootstrap(
     
     Parameters
     ----------
+    num_cores : int
+        The number of cores to use for parallel processing,
+        only interesting for showing the progress bar.
     location : str
         The location to deconvolute.
     preproc : ll.DataPreprocesser
@@ -123,7 +130,7 @@ def _deconvolute_bootstrap(
 
     for b in (
         trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
-        if bootstrap > 1
+        if bootstrap > 1 and num_cores == 1
         else [0]
     ):
         logging.info(f"bootstrap: {b}")
@@ -556,6 +563,7 @@ def deconvolute(
     # iterate over locations
     # Create delayed objects for each location
     args_list = [(
+        num_cores,
         location,
         preproc,
         bootstrap,
@@ -575,10 +583,16 @@ def deconvolute(
         confint_name
     ) for location in locations_list]
 
-    # Create a pool of workers
-    with multiprocessing.Pool(processes=num_cores) as pool:
-        # Map the function to the arguments in parallel
-        all_deconv = pool.map(_deconvolute_bootstrap_wrapper, args_list)
+    # Run the deconvoilution for a sinlge location or sequentially if only one core is available
+    if num_cores == 1 or len(args_list) == 1:
+        all_deconv = [_deconvolute_bootstrap_wrapper(args) for args in args_list]
+    # Run the deconvolution in parallel
+    else:
+        # Create a pool of workers
+        with multiprocessing.Pool(processes=num_cores) as pool:
+            # Map the function to the arguments in parallel - choosing imap as objects are large instaed of pool.map
+            all_deconv = list(tqdm(pool.imap(_deconvolute_bootstrap_wrapper, args_list), total=len(args_list), desc="All Locations", position=0))
+            # Update the progress bar after each item is processed
 
     # Flatten the results if necessary
     all_deconv = [item for sublist in all_deconv for item in sublist]
@@ -740,5 +754,4 @@ def deconvolute(
 
 
 if __name__ == "__main__":
-    client = get_dask_client()
     deconvolute()

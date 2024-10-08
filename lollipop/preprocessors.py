@@ -100,7 +100,7 @@ class DataPreprocesser:
         # self.df_tally = self
         self.df_tally = self.df_tally.replace(
             ["extra", "mut", "shared", "revert", "subset"], 1
-        ).infer_objects()
+        ).infer_objects(copy=False)
 
         # remove uninformative mutations
         variants_columns = list(set(variants_list) & set(self.df_tally.columns))
