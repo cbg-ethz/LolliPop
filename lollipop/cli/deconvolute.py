@@ -16,23 +16,9 @@ import time
 
 from typing import List, Tuple, Union 
 
-import dask
+import multiprocessing
 
-from dask.distributed import Client, LocalCluster
-from dask_jobqueue import SLURMCluster
-
-import os
-
-def get_local_dask_client():
-    # Create a local cluster
-    cluster = LocalCluster()
-    
-    # Create a client connected to this cluster
-    client = Client(cluster)
-    
-    print(f"Dask dashboard available at: {client.dashboard_link}")
-    
-    return client
+num_cores = 8
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -51,8 +37,9 @@ regressors = {
     "robust": ll.RobustReg,
 }
 
+def _deconvolute_bootstrap_wrapper(args):
+    return _deconvolute_bootstrap(*args)
 
-@dask.delayed
 def _deconvolute_bootstrap(
         location: str, 
         preproc: ll.DataPreprocesser, 
@@ -568,29 +555,30 @@ def deconvolute(
     # CORE DECONVOLUTION
     # iterate over locations
     # Create delayed objects for each location
-    delayed_results = [_deconvolute_bootstrap(
-        location=location,
-        preproc=preproc,
-        bootstrap=bootstrap,
-        locations_list=locations_list,
-        no_loc=no_loc,
-        no_date=no_date,
-        date_intervals=date_intervals,
-        var_dates=var_dates,
-        kernel=kernel,
-        kernel_params=kernel_params,
-        regressor=regressor,
-        regressor_params=regressor_params,
-        confint=confint,
-        confint_params=confint_params,
-        deconv_params=deconv_params,
-        have_confint=have_confint,
-        confint_name=confint_name
+    args_list = [(
+        location,
+        preproc,
+        bootstrap,
+        locations_list,
+        no_loc,
+        no_date,
+        date_intervals,
+        var_dates,
+        kernel,
+        kernel_params,
+        regressor,
+        regressor_params,
+        confint,
+        confint_params,
+        deconv_params,
+        have_confint,
+        confint_name
     ) for location in locations_list]
 
-    # Compute all results in parallel
-    # logging.info("Dask Multiprocessing Dashboard link: %s", client.dashboard_link)
-    all_deconv = dask.compute(*delayed_results)
+    # Create a pool of workers
+    with multiprocessing.Pool(processes=num_cores) as pool:
+        # Map the function to the arguments in parallel
+        all_deconv = pool.map(_deconvolute_bootstrap_wrapper, args_list)
 
     # Flatten the results if necessary
     all_deconv = [item for sublist in all_deconv for item in sublist]

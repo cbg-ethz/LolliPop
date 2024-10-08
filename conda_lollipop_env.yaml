@@ -17,4 +17,3 @@ dependencies:
   - click-option-group
   - poetry-core >= 1.0.8
   - poetry-dynamic-versioning
-  - dask[complete]
