@@ -5,6 +5,8 @@ import re
 import sys
 from pandas.api.types import is_numeric_dtype
 
+# adopting new bahaviour of df.replace().infer_objects()
+pd.set_option('future.no_silent_downcasting', True)
 
 class DataPreprocesser:
     """

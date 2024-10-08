@@ -18,8 +18,6 @@ from typing import List, Tuple, Union
 
 import multiprocessing
 
-num_cores = 1
-
 # Configure logging
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -44,7 +42,7 @@ def _deconvolute_bootstrap_wrapper(args):
     return _deconvolute_bootstrap(*args)
 
 def _deconvolute_bootstrap(
-        num_cores: int,
+        n_cores: int,
         location: str, 
         preproc: ll.DataPreprocesser, 
         bootstrap : int, 
@@ -68,7 +66,7 @@ def _deconvolute_bootstrap(
     
     Parameters
     ----------
-    num_cores : int
+    n_cores : int
         The number of cores to use for parallel processing,
         only interesting for showing the progress bar.
     location : str
@@ -130,7 +128,7 @@ def _deconvolute_bootstrap(
 
     for b in (
         trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
-        if bootstrap > 1 and num_cores == 1
+        if bootstrap > 1 and n_cores == 1
         else [0]
     ):
         logging.info(f"bootstrap: {b}")
@@ -311,6 +309,15 @@ def _deconvolute_bootstrap(
     type=int,
     help="Seed the random generator",
 )
+@click.option(
+    "--n_cores",
+    "-n",
+    metavar="N",
+    required=False,
+    default=1,
+    type=int,
+    help="Cores for parralell processing of location, default 1 for sequential processing.",
+)
 @click.argument("tally_data", metavar="TALLY_TSV", nargs=1)
 def deconvolute(
     variants_config,
@@ -319,11 +326,13 @@ def deconvolute(
     loc,
     filters,
     seed,
+    n_cores,
     output,
     fmt_columns,
     out_json,
     tally_data,
 ):
+
     # load data
     yaml = ruamel.yaml.YAML(typ="rt")
     print("load data")
@@ -396,6 +405,20 @@ def deconvolute(
 
         df_tally["location"] = "location"
         locations_list = ["location"]
+
+        # check if the number of cores is valid
+        if n_cores < 1:
+            logging.ERROR("The number of cores must be at least 1.")
+            sys.exit(1)
+        # check if there are more cores than locations
+        if n_cores > len(locations_list) + 1:
+            logging.warning("The number of cores is greater than the number of locations.")
+            # adjust the number of cores to the number of locations
+            n_cores = len(loc) + 1
+            logging.warning(f"The number of cores has been adjusted to {n_cores}.")
+        
+        # inform on the mode of computation
+        print("Available cores (parrallelized by locations): ", n_cores)
 
     if locations_list is None:
         # remember to remove empty cells: nan or empty cells
@@ -563,7 +586,7 @@ def deconvolute(
     # iterate over locations
     # Create delayed objects for each location
     args_list = [(
-        num_cores,
+        n_cores,
         location,
         preproc,
         bootstrap,
@@ -584,12 +607,12 @@ def deconvolute(
     ) for location in locations_list]
 
     # Run the deconvoilution for a sinlge location or sequentially if only one core is available
-    if num_cores == 1 or len(args_list) == 1:
+    if n_cores == 1 or len(args_list) == 1:
         all_deconv = [_deconvolute_bootstrap_wrapper(args) for args in args_list]
     # Run the deconvolution in parallel
     else:
         # Create a pool of workers
-        with multiprocessing.Pool(processes=num_cores) as pool:
+        with multiprocessing.Pool(processes=n_cores) as pool:
             # Map the function to the arguments in parallel - choosing imap as objects are large instaed of pool.map
             all_deconv = list(tqdm(pool.imap(_deconvolute_bootstrap_wrapper, args_list), total=len(args_list), desc="All Locations", position=0))
             # Update the progress bar after each item is processed
