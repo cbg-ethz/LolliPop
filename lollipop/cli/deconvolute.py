@@ -23,29 +23,16 @@ from dask_jobqueue import SLURMCluster
 
 import os
 
-def get_dask_client():
-    if 'SLURM_JOB_ID' in os.environ:
-        # We're on a SLURM cluster
-        from dask_jobqueue import SLURMCluster
-        
-        # Use default values that can be overridden by environment variables
-        queue = os.environ.get('SLURM_QUEUE', 'default')
-        project = os.environ.get('SLURM_PROJECT', 'default')
-        cores = int(os.environ.get('SLURM_CORES', 1))
-        memory = os.environ.get('SLURM_MEMORY', '4GB')
-        jobs = int(os.environ.get('SLURM_JOBS', 1))
-        
-        cluster = SLURMCluster(
-            queue=queue,
-            project=project,
-            cores=cores,
-            memory=memory
-        )
-        cluster.scale(jobs=jobs)
-        return Client(cluster)
-    else:
-        # We're running locally
-        return Client(LocalCluster())
+def get_local_dask_client():
+    # Create a local cluster
+    cluster = LocalCluster()
+    
+    # Create a client connected to this cluster
+    client = Client(cluster)
+    
+    print(f"Dask dashboard available at: {client.dashboard_link}")
+    
+    return client
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
