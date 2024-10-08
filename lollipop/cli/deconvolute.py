@@ -20,17 +20,15 @@ import dask
 from dask.distributed import Client, LocalCluster
 import socket
 
-# Get the hostname of the node you're running on
-hostname = socket.gethostname()
 
 # Create a LocalCluster with specific port ranges
 cluster = LocalCluster(
     n_workers=8,  # Adjust based on available cores
     threads_per_worker=1,  # Adjust based on available cores and memory
-    scheduler_port=0,  # Let the scheduler choose an available port
-    dashboard_address=':0',  # Let the dashboard choose an available port
-    host=hostname  # Use the node's hostname
 )
+
+# Create a Client using the cluster
+client = Client(cluster)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
