@@ -20,7 +20,7 @@ import dask
 
 from dask.distributed import Client
 
-client = Client(threads_per_worker=6, n_workers=1)
+client = Client(threads_per_worker=8, n_workers=1)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
