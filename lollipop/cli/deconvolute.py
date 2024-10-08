@@ -17,18 +17,31 @@ import time
 from typing import List, Tuple, Union 
 
 import dask
+
 from dask.distributed import Client, LocalCluster
-import socket
+from dask_jobqueue import SLURMCluster
 
+import os
 
-# Create a LocalCluster with specific port ranges
-cluster = LocalCluster(
-    n_workers=8,  # Adjust based on available cores
-    threads_per_worker=1,  # Adjust based on available cores and memory
-)
+def is_running_on_slurm():
+    return 'SLURM_JOB_ID' in os.environ
 
-# Create a Client using the cluster
-client = Client(cluster)
+def get_dask_client():
+    if is_running_on_slurm():
+        # SLURM cluster setup
+        cluster = SLURMCluster(
+            queue='lollipop_queue',
+            project='lollipop',
+            cores=8,
+            memory='8GB'
+        )
+        cluster.scale(jobs=10)  # Adjust as needed
+        logging.info("Running on SLURM cluster")
+        return Client(cluster)
+    else:
+        # Local setup
+        logging.info("Running on local cluster")
+        return Client(LocalCluster())
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -585,7 +598,7 @@ def deconvolute(
     ) for location in locations_list]
 
     # Compute all results in parallel
-    logging.info("Dask Multiprocessing Dashboard link: %s", client.dashboard_link)
+    # logging.info("Dask Multiprocessing Dashboard link: %s", client.dashboard_link)
     all_deconv = dask.compute(*delayed_results)
 
     # Flatten the results if necessary
@@ -748,4 +761,5 @@ def deconvolute(
 
 
 if __name__ == "__main__":
+    client = get_dask_client()
     deconvolute()
