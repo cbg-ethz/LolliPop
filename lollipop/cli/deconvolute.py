@@ -23,24 +23,28 @@ from dask_jobqueue import SLURMCluster
 
 import os
 
-def is_running_on_slurm():
-    return 'SLURM_JOB_ID' in os.environ
-
 def get_dask_client():
-    if is_running_on_slurm():
-        # SLURM cluster setup
+    if 'SLURM_JOB_ID' in os.environ:
+        # We're on a SLURM cluster
+        from dask_jobqueue import SLURMCluster
+        
+        # Use default values that can be overridden by environment variables
+        queue = os.environ.get('SLURM_QUEUE', 'default')
+        project = os.environ.get('SLURM_PROJECT', 'default')
+        cores = int(os.environ.get('SLURM_CORES', 1))
+        memory = os.environ.get('SLURM_MEMORY', '4GB')
+        jobs = int(os.environ.get('SLURM_JOBS', 1))
+        
         cluster = SLURMCluster(
-            queue='lollipop_queue',
-            project='lollipop',
-            cores=8,
-            memory='8GB'
+            queue=queue,
+            project=project,
+            cores=cores,
+            memory=memory
         )
-        cluster.scale(jobs=10)  # Adjust as needed
-        logging.info("Running on SLURM cluster")
+        cluster.scale(jobs=jobs)
         return Client(cluster)
     else:
-        # Local setup
-        logging.info("Running on local cluster")
+        # We're running locally
         return Client(LocalCluster())
 
 # Configure logging
