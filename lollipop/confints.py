@@ -149,7 +149,7 @@ class WaldConfint:
             }
 
 
-def resample_mutations(df_city1, mutations):
+def resample_mutations(df_city1, mutations, namefield="mutations"):
     """
     Function to resample mutations by replacement (preserving mutation-complement pairs).
     Returns a copy of the DataFrame with <resample_value> column indicating how many times the mutation was in the resample.
@@ -167,6 +167,6 @@ def resample_mutations(df_city1, mutations):
     )
     # make a column with coefficients for how many times a row should be accounted for according to the resample
     df_sampled = df_city1.copy()
-    df_sampled.loc[:, "resample_value"] = df_sampled.mutations.map(resample_coeff_dict)
+    df_sampled.loc[:, "resample_value"] = df_sampled[namefield].map(resample_coeff_dict)
 
     return df_sampled, rand_idcs

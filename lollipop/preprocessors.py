@@ -11,13 +11,14 @@ class DataPreprocesser:
     General class to preprocess tallymut data before deconvolution.
     """
 
-    def __init__(self, df_tally):
+    def __init__(self, df_tally, namefield="mutations"):
         self.df_tally = df_tally
 
-    def make_complement(self, df_tally, variants_list):
+    def make_complement(self, df_tally, variants_list, namefield):
         """return a dataframe with the complement of mutations signatures and mutations fracs"""
         t_data = df_tally.copy()
-        t_data["mutations"] = "-" + t_data["mutations"]
+        if namefield in t_data.columns:
+            t_data[namefield] = "-" + t_data[namefield]
         t_data["frac"] = 1 - t_data["frac"]
         t_data[variants_list] = 1 - t_data[variants_list]
         t_data["undetermined"] = 1
@@ -35,6 +36,7 @@ class DataPreprocesser:
         no_date=False,
         remove_deletions=True,
         make_complement=True,
+        namefield="mutations",
     ):
         """General preprocessing steps"""
         # rename columns
@@ -52,7 +54,7 @@ class DataPreprocesser:
         )
         # create column with mutation signature
         if ("base" in self.df_tally.columns) and ("pos" in self.df_tally.columns):
-            # NOTE if cojac-based instead of SNV-bsed deconvolution: there is no single mutation
+            # NOTE if cojac-based instead of SNV-bsed deconvolution: there is no single mutation cojac tabmut has an option to generate mutations strings
             self.df_tally["mutations"] = (
                 self.df_tally["pos"].astype(str) + self.df_tally["base"]
             )
@@ -114,7 +116,10 @@ class DataPreprocesser:
         self.df_tally.insert(self.df_tally.columns.size - 1, "undetermined", 0)
         if make_complement:
             self.df_tally = pd.concat(
-                [self.df_tally, self.make_complement(self.df_tally, variants_columns)]
+                [
+                    self.df_tally,
+                    self.make_complement(self.df_tally, variants_columns, namefield),
+                ]
             )
 
         return self

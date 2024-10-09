@@ -113,7 +113,7 @@ Options:
 ```
 
 ```console
-$ lollipop deconvolute --help  
+$ lollipop deconvolute --help
 Usage: lollipop deconvolute [OPTIONS] TALLY_TSV
 
   Deconvolution for Wastewater Genomics
@@ -134,12 +134,16 @@ Options:
   -k, --deconv-config, --dec YAML
                                   Configuration of parameters for kernel
                                   deconvolution  [required]
-  --filters YAML                  List of filters for removing problematic
-                                  mutations from tally
   -l, --loc, --location, --wwtp, --catchment NAME
                                   Name(s) of location/wastewater treatment
                                   plant/catchment area to process
+  -fl, --filters YAML             List of filters for removing problematic
+                                  mutations from tally
   -s, --seed SEED                 Seed the random generator
+  -nf, --namefield COLUMN         column to use as 'names' for the entries in
+                                  tally table. By default, if 'pos' and 'base'
+                                  exist a column 'mutations' will be created
+                                  and used as name.
   -h, --help                      Show this message and exit.
 ```
 
@@ -471,7 +475,7 @@ poetry install --extras "cli"
 
 Long term goal:
 
-- [ ] Inputs other than SNVs (e.g. ShoRAH local haplotypes)
+~~- [x] Inputs other than SNVs: can deconvolute  COJAC's output tables~~
 
 ## Contributions
 

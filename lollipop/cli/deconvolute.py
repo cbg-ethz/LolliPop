@@ -112,6 +112,15 @@ regressors = {
     type=int,
     help="Seed the random generator",
 )
+@click.option(
+    "--namefield",
+    "-nf",
+    metavar="COLUMN",
+    required=False,
+    default="mutations",
+    type=str,
+    help="column to use as 'names' for the entries in tally table. By default, if 'pos' and 'base' exist a column 'mutations' will be created and used as name.",
+)
 @click.argument("tally_data", metavar="TALLY_TSV", nargs=1)
 def deconvolute(
     variants_config,
@@ -124,6 +133,7 @@ def deconvolute(
     fmt_columns,
     out_json,
     tally_data,
+    namefield,
 ):
     # load data
     yaml = ruamel.yaml.YAML(typ="rt")
@@ -157,7 +167,10 @@ def deconvolute(
     # data
     try:
         df_tally = pd.read_csv(
-            tally_data, sep="\t", parse_dates=["date"], dtype={"location_code": "str"}
+            tally_data,
+            sep="\t",
+            parse_dates=["date"],
+            dtype={"location_code": "str", namefield: "str"},
         )
     except ValueError:
         df_tally = pd.read_csv(tally_data, sep="\t", dtype={"location_code": "str"})
@@ -305,6 +318,7 @@ def deconvolute(
         end_date=end_date,
         no_date=no_date,
         remove_deletions=remove_deletions,
+        namefield=namefield,
     )
     preproc = preproc.filter_mutations(filters=filters)
 
@@ -365,7 +379,12 @@ def deconvolute(
         ):
             if bootstrap > 1:
                 # resample if we're doing bootstrapping
-                temp_dfb = ll.resample_mutations(loc_df, loc_df.mutations.unique())[0]
+                assert (
+                    namefield in loc_df.columns
+                ), f"bootstrapping needs a column with names for the entries of the tally table, but no column '{namefield}' found. Use option '--namefield' to specify"
+                temp_dfb = ll.resample_mutations(
+                    loc_df, loc_df[namefield].unique(), namefield
+                )[0]
             else:
                 # just run one on everything
                 temp_dfb = loc_df
