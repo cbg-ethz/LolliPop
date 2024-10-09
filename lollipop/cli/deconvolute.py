@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
-import pandas as pd
-import numpy as np
-import lollipop as ll
-from scipy.optimize import nnls, least_squares
-from tqdm import tqdm, trange
+
+"""Implements the deconvolute command for the lollipop CLI."""
+
+import sys
+from typing import List, Tuple, Union
+import logging
+import time
+import multiprocessing
+import json
 
 import click
 import ruamel.yaml
-import json
+import pandas as pd
+import numpy as np
+from tqdm import tqdm, trange
 
-import sys
-
-import logging
-import time
-
-from typing import List, Tuple, Union 
-
-import multiprocessing
+import lollipop as ll
 
 # Configure logging
-logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
-
+logging.basicConfig(
+    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 kernels = {
     "gaussian": ll.GaussianKernel,
@@ -35,40 +35,42 @@ regressors = {
     "robust": ll.RobustReg,
 }
 
+
 def _deconvolute_bootstrap_wrapper(args):
     """
     Wrapper for the deconvolute bootstrap function to allow for parallel processing.
     """
     return _deconvolute_bootstrap(*args)
 
+
 def _deconvolute_bootstrap(
-        n_cores: int,
-        location: str, 
-        preproc: ll.DataPreprocesser, 
-        bootstrap : int, 
-        locations_list: List, 
-        no_loc: bool, 
-        no_date: bool, 
-        date_intervals: List[Tuple],
-        var_dates: dict,
-        kernel: Union[ll.GaussianKernel, ll.BoxKernel],
-        kernel_params: dict,
-        regressor: Union[ll.NnlsReg, ll.RobustReg],
-        regressor_params: dict,
-        confint: Union[ll.confints.NullConfint, ll.confints.WaldConfint],
-        confint_params: dict,
-        deconv_params: dict,
-        have_confint: bool,
-        confint_name: str
-        ) -> List[pd.DataFrame]:
+    n_cores: int,
+    location: str,
+    preproc: ll.DataPreprocesser,
+    bootstrap: int,
+    locations_list: List,
+    no_loc: bool,
+    no_date: bool,
+    date_intervals: List[Tuple],
+    var_dates: dict,
+    kernel: Union[ll.GaussianKernel, ll.BoxKernel],
+    kernel_params: dict,
+    regressor: Union[ll.NnlsReg, ll.RobustReg],
+    regressor_params: dict,
+    confint: Union[ll.confints.NullConfint, ll.confints.WaldConfint],
+    confint_params: dict,
+    deconv_params: dict,
+    have_confint: bool,
+    confint_name: str,
+) -> List[pd.DataFrame]:
     """
     Deconvolute the data for a given location and bootstrap iteration.
-    
+
     Parameters
     ----------
     n_cores : int
         The number of cores to use for parallel processing,
-        only interesting for showing the progress bar.
+        (Only used for all locastion progress bar parr/sequc)
     location : str
         The location to deconvolute.
     preproc : ll.DataPreprocesser
@@ -76,8 +78,8 @@ def _deconvolute_bootstrap(
     bootstrap : int
         The number of bootstrap iterations to perform.
     locations_list : List
-        The list of locations to deconvolute in total. Used for progress bar. 
-        TODO: consider removing this parameter.
+        The list of locations to deconvolute in total.
+        (Only used for locastion specific progress bar.)
     no_loc : bool
         Whether to ignore location information.
     no_date : bool
@@ -104,7 +106,7 @@ def _deconvolute_bootstrap(
         Whether to use a confidence interval.
     confint_name : str
         The name of the confidence interval.
-    
+
     Returns
     -------
     List[pd.DataFrame]
@@ -171,9 +173,7 @@ def _deconvolute_bootstrap(
                 set(var_dates["var_dates"][mindate]) & set(temp_df2.columns)
             )
             temp_df2 = temp_df2[
-                ~temp_df2[variants_columns]
-                .sum(axis=1)
-                .isin([0, len(variants_columns)])
+                ~temp_df2[variants_columns].sum(axis=1).isin([0, len(variants_columns)])
             ]
             if temp_df2.size == 0:
                 continue
@@ -332,7 +332,6 @@ def deconvolute(
     out_json,
     tally_data,
 ):
-
     # load data
     yaml = ruamel.yaml.YAML(typ="rt")
     print("load data")
@@ -412,11 +411,13 @@ def deconvolute(
             sys.exit(1)
         # check if there are more cores than locations
         if n_cores > len(locations_list) + 1:
-            logging.warning("The number of cores is greater than the number of locations.")
+            logging.warning(
+                "The number of cores is greater than the number of locations."
+            )
             # adjust the number of cores to the number of locations
             n_cores = len(loc) + 1
             logging.warning(f"The number of cores has been adjusted to {n_cores}.")
-        
+
         # inform on the mode of computation
         print("Available cores (parrallelized by locations): ", n_cores)
 
@@ -574,7 +575,7 @@ def deconvolute(
     logging.info(f"locations: {locations_list}")
     logging.info(f"bootstrap: {bootstrap}")
     logging.info(f"date_intervals: {date_intervals}")
-    
+
     # starting computation
     logging.info("starting computation")
     # start a timer
@@ -585,26 +586,29 @@ def deconvolute(
     # CORE DECONVOLUTION
     # iterate over locations
     # Create delayed objects for each location
-    args_list = [(
-        n_cores,
-        location,
-        preproc,
-        bootstrap,
-        locations_list,
-        no_loc,
-        no_date,
-        date_intervals,
-        var_dates,
-        kernel,
-        kernel_params,
-        regressor,
-        regressor_params,
-        confint,
-        confint_params,
-        deconv_params,
-        have_confint,
-        confint_name
-    ) for location in locations_list]
+    args_list = [
+        (
+            n_cores,
+            location,
+            preproc,
+            bootstrap,
+            locations_list,
+            no_loc,
+            no_date,
+            date_intervals,
+            var_dates,
+            kernel,
+            kernel_params,
+            regressor,
+            regressor_params,
+            confint,
+            confint_params,
+            deconv_params,
+            have_confint,
+            confint_name,
+        )
+        for location in locations_list
+    ]
 
     # Run the deconvoilution for a sinlge location or sequentially if only one core is available
     if n_cores == 1 or len(args_list) == 1:
@@ -614,7 +618,14 @@ def deconvolute(
         # Create a pool of workers
         with multiprocessing.Pool(processes=n_cores) as pool:
             # Map the function to the arguments in parallel - choosing imap as objects are large instaed of pool.map
-            all_deconv = list(tqdm(pool.imap(_deconvolute_bootstrap_wrapper, args_list), total=len(args_list), desc="All Locations", position=0))
+            all_deconv = list(
+                tqdm(
+                    pool.imap(_deconvolute_bootstrap_wrapper, args_list),
+                    total=len(args_list),
+                    desc="All Locations",
+                    position=0,
+                )
+            )
             # Update the progress bar after each item is processed
 
     # Flatten the results if necessary
@@ -622,7 +633,7 @@ def deconvolute(
 
     logging.info(f"all locations took {time.time() - start_time} seconds")
     print("post-process data")
-    deconv_df = pd.concat(all_deconv) # what does this do.
+    deconv_df = pd.concat(all_deconv)  # what does this do.
     if not have_confint:
         deconv_df = deconv_df.fillna(0)
 
