@@ -628,12 +628,14 @@ def deconvolute(
             )
             # Update the progress bar after each item is processed
 
-    # Flatten the results if necessary
-    all_deconv = [item for sublist in all_deconv for item in sublist]
-
     logging.info(f"all locations took {time.time() - start_time} seconds")
+
     print("post-process data")
-    deconv_df = pd.concat(all_deconv)  # what does this do.
+    # Flatten the results from pot. parrallel processing
+    all_deconv = [item for sublist in all_deconv for item in sublist]
+    # concatenate all the results
+    deconv_df = pd.concat(all_deconv)
+
     if not have_confint:
         deconv_df = deconv_df.fillna(0)
 
