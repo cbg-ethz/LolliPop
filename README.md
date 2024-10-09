@@ -140,6 +140,8 @@ Options:
                                   Name(s) of location/wastewater treatment
                                   plant/catchment area to process
   -s, --seed SEED                 Seed the random generator
+  -n, --n-cores  N                Cores for parallel processing for multiple locations,
+                                  defaults to 1 for sequential processing
   -h, --help                      Show this message and exit.
 ```
 
@@ -337,7 +339,7 @@ see [example in filters_preprint.yaml](filters_preprint.yaml).
 #### Running it
 
 ```bash
-lollipop deconvolution --output=deconvoluted.tsv --out-json=deconvoluted_upload.json --var=variants_conf.yaml --vd=variants_dates.yaml --dec=deconv_linear.yaml --seed=42 -- tallymut.tsv
+lollipop deconvolution --output=deconvoluted.tsv --out-json=deconvoluted_upload.json --var=variants_conf.yaml --vd=variants_dates.yaml --dec=deconv_linear.yaml --seed=42  --n-cores=8 -- tallymut.tsv
 ```
 
 ### Output

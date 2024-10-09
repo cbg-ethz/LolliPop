@@ -310,13 +310,13 @@ def _deconvolute_bootstrap(
     help="Seed the random generator",
 )
 @click.option(
-    "--n_cores",
+    "--n-cores",
     "-n",
     metavar="N",
     required=False,
     default=1,
     type=int,
-    help="Cores for parralell processing of location, default 1 for sequential processing.",
+    help="Cores for parallel processing of location, default 1 for sequential processing.",
 )
 @click.argument("tally_data", metavar="TALLY_TSV", nargs=1)
 def deconvolute(
