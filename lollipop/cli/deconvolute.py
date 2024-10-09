@@ -38,9 +38,17 @@ regressors = {
 
 def _deconvolute_bootstrap_wrapper(args):
     """
-    Wrapper for the deconvolute bootstrap function to allow for parallel processing.
+    Wrapper for the deconvolute bootstrap function to allow for parallel processing,
+    handling the random number generator seeding.
     """
-    return _deconvolute_bootstrap(*args)
+
+    # Unpack the arguments
+    *other_args, child_seed = args
+
+    # Initialize the default random number generator with the child seed
+    np.random.default_rng(child_seed)
+
+    return _deconvolute_bootstrap(*other_args)
 
 
 def _deconvolute_bootstrap(
@@ -532,7 +540,17 @@ def deconvolute(
     preproc = preproc.filter_mutations(filters=filters)
 
     print("deconvolve all")
-    np.random.seed(seed)
+
+    # seed the random generator
+    # if locations_list is not or 1 we need one seed otherwise per location
+    if len(locations_list) == 1:
+        n_seeds = 1
+    else:
+        n_seeds = len(locations_list) + 1
+
+    seed_seq = np.random.SeedSequence(seed)
+    seeds = seed_seq.spawn(n_seeds)
+
     all_deconv = []
     # TODO parameters sanitation (e.g.: JSON schema, check in list)
     # bootstrap
@@ -606,8 +624,9 @@ def deconvolute(
             deconv_params,
             have_confint,
             confint_name,
+            child_seed,
         )
-        for location in locations_list
+        for location, child_seed in zip(locations_list, seeds)
     ]
 
     # Run the deconvoilution for a sinlge location or sequentially if only one core is available
