@@ -520,7 +520,7 @@ def deconvolute(
             if maxdate:
                 assert (
                     mindate < maxdate
-                ), f"out of order dates: {mindate} >= {maxdate}. Please fix the content of {variants_date}"
+                ), f"out of order dates: {mindate} >= {maxdate}. Please fix the content of {variants_dates}"
                 print(f"from {mindate} to {maxdate}: {var_dates['var_dates'][mindate]}")
             else:
                 print(f"from {mindate} onward: {var_dates['var_dates'][mindate]}")
