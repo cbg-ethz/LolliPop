@@ -168,7 +168,7 @@ class DataPreprocesser:
             # apply operator
             match m["op"]:
                 case "=" | "==" | "" as e:
-                    if e == "":
+                    if e == "" and type(val) == str:
                         assert (
                             " " not in val
                         ), "Do not use values with space <{val}> when using no operator (implicit 'equals'). (while parsing statement <{fs}> in filter {name})"
