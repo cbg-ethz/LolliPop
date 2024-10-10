@@ -158,7 +158,7 @@ def _deconvolute_bootstrap(
 
     for b in (
         # Progress bar for sequential bootstrapping
-        trange(bootstrap, desc=location, leave=(len(locations_list) > 1)) 
+        trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
         if bootstrap > 1 and n_cores == 1
         # No progress bar for parallel bootstrapping
         else range(bootstrap)
