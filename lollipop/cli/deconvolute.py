@@ -172,17 +172,16 @@ def _deconvolute_bootstrap(
             # resample if we're doing bootstrapping
             assert (
                 namefield in loc_df.columns
-            ), f"bootstrapping needs a column with names for the entries of the tally table,
-                 but no column '{namefield}' found. Use option '--namefield' to specify"
+            ), f"""
+                bootstrapping needs a column with names for the entries of the tally table,"
+                but no column '{namefield}' found. Use option '--namefield' to specify
+                """
             temp_dfb = ll.resample_mutations(
                 loc_df, loc_df[namefield].unique(), namefield
             )[0]
         else:
             # just run one on everything
             temp_dfb = loc_df
-
-        # print the memory usage of the current bootstrap
-        logging.info(f"memory usage: {temp_dfb.memory_usage().sum() / 1024**2} MB")
 
         for mindate, maxdate in (
             tqdm(date_intervals, desc=location)
@@ -204,8 +203,6 @@ def _deconvolute_bootstrap(
                 temp_df2 = temp_dfb
             if temp_df2.size == 0:
                 continue
-            # print the memory usage of the current date
-            logging.info(f"memory usage: {temp_df2.memory_usage().sum() / 1024**2} MB")
 
             # remove uninformative mutations (present either always or never)
             variants_columns = list(
