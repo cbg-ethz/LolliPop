@@ -152,17 +152,20 @@ def _deconvolute_bootstrap(
 
     # print the memory usage of the current location
     logging.info(f"memory usage: {loc_df.memory_usage().sum() / 1024**2} MB")
-
+            
     for b in (
         trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
         if bootstrap > 1 and n_cores == 1
         else [0]
     ):
-        logging.info(f"bootstrap: {b}")
-        start_time_b = time.time()
         if bootstrap > 1:
             # resample if we're doing bootstrapping
-            temp_dfb = ll.resample_mutations(loc_df, loc_df.mutations.unique())[0]
+            assert (
+                namefield in loc_df.columns
+            ), f"bootstrapping needs a column with names for the entries of the tally table, but no column '{namefield}' found. Use option '--namefield' to specify"
+            temp_dfb = ll.resample_mutations(
+                loc_df, loc_df[namefield].unique(), namefield
+            )[0]
         else:
             # just run one on everything
             temp_dfb = loc_df
@@ -343,6 +346,15 @@ def _deconvolute_bootstrap(
     type=int,
     help="Cores for parallel processing of location, default 1 for sequential processing.",
 )
+@click.option(
+    "--namefield",
+    "-nf",
+    metavar="COLUMN",
+    required=False,
+    default="mutations",
+    type=str,
+    help="column to use as 'names' for the entries in tally table. By default, if 'pos' and 'base' exist a column 'mutations' will be created and used as name.",
+)
 @click.argument("tally_data", metavar="TALLY_TSV", nargs=1)
 def deconvolute(
     variants_config,
@@ -356,6 +368,7 @@ def deconvolute(
     fmt_columns,
     out_json,
     tally_data,
+    namefield,
 ):
     # load data
     yaml = ruamel.yaml.YAML(typ="rt")
@@ -389,7 +402,10 @@ def deconvolute(
     # data
     try:
         df_tally = pd.read_csv(
-            tally_data, sep="\t", parse_dates=["date"], dtype={"location_code": "str"}
+            tally_data,
+            sep="\t",
+            parse_dates=["date"],
+            dtype={"location_code": "str", namefield: "str"},
         )
     except ValueError:
         df_tally = pd.read_csv(tally_data, sep="\t", dtype={"location_code": "str"})
@@ -553,6 +569,7 @@ def deconvolute(
         end_date=end_date,
         no_date=no_date,
         remove_deletions=remove_deletions,
+        namefield=namefield,
     )
     preproc = preproc.filter_mutations(filters=filters)
 
