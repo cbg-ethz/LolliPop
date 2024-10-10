@@ -93,6 +93,7 @@ def _deconvolute_bootstrap(
     deconv_params: dict,
     have_confint: bool,
     confint_name: str,
+    namefield: str,
 ) -> List[pd.DataFrame]:
     """
     Deconvolute the data for a given location and bootstrap iteration.
@@ -137,6 +138,8 @@ def _deconvolute_bootstrap(
         Whether to use a confidence interval.
     confint_name : str
         The name of the confidence interval.
+    namefield: str
+        The column to use as 'names' for the entries in the tally table.
 
     Returns
     -------
@@ -663,6 +666,7 @@ def deconvolute(
             deconv_params,
             have_confint,
             confint_name,
+            namefield,
             child_seed,
         )
         for location, loc_df, child_seed in zip(locations_list, loc_dfs, seeds)
