@@ -161,6 +161,8 @@ def _deconvolute_bootstrap(
         if bootstrap > 1 and n_cores == 1
         else [0]
     ):
+        logging.info(f"bootstrap: {b}")
+        start_time_b = time.time()
         if bootstrap > 1:
             # resample if we're doing bootstrapping
             assert (
