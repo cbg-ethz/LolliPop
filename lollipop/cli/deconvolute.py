@@ -155,10 +155,15 @@ def _deconvolute_bootstrap(
 
     # print the memory usage of the current location
     logging.info(f"memory usage: {loc_df.memory_usage().sum() / 1024**2} MB")
-            
+
     for b in (
-        trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
+        # Progress bar for sequential bootstrapping
+        trange(bootstrap, desc=location, leave=(len(locations_list) > 1)) 
         if bootstrap > 1 and n_cores == 1
+        # No progress bar for parallel bootstrapping
+        else range(bootstrap)
+        if bootstrap > 1 and n_cores != 1
+        # No bootstrapping
         else [0]
     ):
         logging.info(f"bootstrap: {b}")
@@ -167,7 +172,8 @@ def _deconvolute_bootstrap(
             # resample if we're doing bootstrapping
             assert (
                 namefield in loc_df.columns
-            ), f"bootstrapping needs a column with names for the entries of the tally table, but no column '{namefield}' found. Use option '--namefield' to specify"
+            ), f"bootstrapping needs a column with names for the entries of the tally table,
+                 but no column '{namefield}' found. Use option '--namefield' to specify"
             temp_dfb = ll.resample_mutations(
                 loc_df, loc_df[namefield].unique(), namefield
             )[0]
