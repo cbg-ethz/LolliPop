@@ -36,6 +36,29 @@ regressors = {
 }
 
 
+def _get_location_data(
+    preproc: ll.DataPreprocesser, location: str, no_loc: bool
+) -> pd.DataFrame:
+    """
+    Get the data for a given location.
+
+    Parameters
+    ----------
+    preproc : ll.DataPreprocesser
+        The preprocessed data object.
+    location : str
+        The location to get the data for.
+    no_loc : bool
+        Whether to ignore location information.
+    """
+    loc_df = (
+        preproc.df_tally[preproc.df_tally["location"] == location]
+        if not no_loc
+        else preproc.df_tally
+    )
+    return loc_df
+
+
 def _deconvolute_bootstrap_wrapper(args):
     """
     Wrapper for the deconvolute bootstrap function to allow for parallel processing,
@@ -54,7 +77,7 @@ def _deconvolute_bootstrap_wrapper(args):
 def _deconvolute_bootstrap(
     n_cores: int,
     location: str,
-    preproc: ll.DataPreprocesser,
+    loc_df: pd.DataFrame,
     bootstrap: int,
     locations_list: List,
     no_loc: bool,
@@ -81,8 +104,8 @@ def _deconvolute_bootstrap(
         (Only used for all locastion progress bar parr/sequc)
     location : str
         The location to deconvolute.
-    preproc : ll.DataPreprocesser
-        The preprocessed data object.
+    lod_df: pd.DataFrame
+        The data for the location.
     bootstrap : int
         The number of bootstrap iterations to perform.
     locations_list : List
@@ -127,12 +150,6 @@ def _deconvolute_bootstrap(
     if bootstrap <= 1 and len(date_intervals) <= 1:
         tqdm.write(location)
 
-    # select the current location
-    loc_df = (
-        preproc.df_tally[preproc.df_tally["location"] == location]
-        if not no_loc
-        else preproc.df_tally
-    )
     # print the memory usage of the current location
     logging.info(f"memory usage: {loc_df.memory_usage().sum() / 1024**2} MB")
 
@@ -601,6 +618,11 @@ def deconvolute(
     # print the memory usage of the dataframe
     logging.info(f"memory usage: {df_tally.memory_usage().sum() / 1024**2} MB")
 
+    # get the location specific data frames
+    loc_dfs = [
+        _get_location_data(preproc, location, no_loc) for location in locations_list
+    ]
+
     # CORE DECONVOLUTION
     # iterate over locations
     # Create delayed objects for each location
@@ -608,7 +630,7 @@ def deconvolute(
         (
             n_cores,
             location,
-            preproc,
+            loc_df,
             bootstrap,
             locations_list,
             no_loc,
@@ -626,7 +648,7 @@ def deconvolute(
             confint_name,
             child_seed,
         )
-        for location, child_seed in zip(locations_list, seeds)
+        for location, loc_df, child_seed in zip(locations_list, loc_dfs, seeds)
     ]
 
     # Run the deconvoilution for a sinlge location or sequentially if only one core is available
