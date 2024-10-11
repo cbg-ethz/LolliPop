@@ -156,13 +156,24 @@ def _deconvolute_bootstrap(
     # print the memory usage of the current location
     logging.info(f"memory usage: {loc_df.memory_usage().sum() / 1024**2} MB")
 
+    workerid = None
+    if n_cores != 1:
+        workerid = multiprocessing.current_process()._identity[0] - 1
+
     for b in (
-        # Progress bar for sequential bootstrapping
-        trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
-        if bootstrap > 1 and n_cores == 1
-        # No progress bar for parallel bootstrapping
-        else range(bootstrap)
-        if bootstrap > 1 and n_cores != 1
+        (
+            # Progress bar for sequential bootstrapping
+            trange(bootstrap, desc=location, leave=(len(locations_list) > 1))
+            if n_cores == 1
+            # Progress bar for parallel bootstrapping (at fixed per core position)
+            else trange(
+                bootstrap,
+                desc=f"core{workerid}: {location}",
+                leave=False,
+                position=workerid + 1,
+            )
+        )
+        if bootstrap > 1
         # No bootstrapping
         else [0]
     ):
@@ -683,7 +694,9 @@ def deconvolute(
     # Run the deconvolution in parallel
     else:
         # Create a pool of workers
-        with multiprocessing.Pool(processes=n_cores) as pool:
+        with multiprocessing.Pool(
+            processes=n_cores, initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)
+        ) as pool:
             # Map the function to the arguments in parallel - choosing imap as objects are large instaed of pool.map
             all_deconv = list(
                 tqdm(
