@@ -693,6 +693,9 @@ def deconvolute(
         all_deconv = [_deconvolute_bootstrap_wrapper(args) for args in args_list]
     # Run the deconvolution in parallel
     else:
+        multiprocessing.freeze_support()
+        tqdm.set_lock(multiprocessing.Manager().Lock())
+
         # Create a pool of workers
         with multiprocessing.Pool(
             processes=n_cores, initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)
