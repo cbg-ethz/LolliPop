@@ -12,6 +12,8 @@ def test_workflow():
         [
             "lollipop",
             "deconvolute",
+            "--n-cores=2",
+            "--par-bar=1",
             "--output=test_results.csv",
             "--out-json=test_results.json",
             "--fmt-columns",
@@ -19,6 +21,7 @@ def test_workflow():
             "--deconv-config=presets/deconv_linear.yaml",
             "--filters=filters_preprint.yaml",
             "--location=Zürich (ZH)",
+            "--location=Genève (GE)",
             "--seed=42",
             "preprint/data/tallymut_line_full.tsv.zst",
         ]
