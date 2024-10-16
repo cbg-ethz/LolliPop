@@ -14,6 +14,7 @@ import ruamel.yaml
 import pandas as pd
 import numpy as np
 from tqdm import tqdm, trange
+from threadpoolctl import ThreadpoolController
 
 import lollipop as ll
 
@@ -147,6 +148,10 @@ def _deconvolute_bootstrap(
         The deconvolution results for the location and bootstrap iterations.
     """
 
+    # monitor the number of threads, to prevent oversubscription on blas / cluster systmes
+    controller = ThreadpoolController()
+    logging.info(f"Threading configuration:\n {controller.info()}")
+
     # deconvolution results
     deconv = []
 
@@ -232,7 +237,7 @@ def _deconvolute_bootstrap(
                 # just run one on everything
                 weights = {}
 
-            # deconvolution
+            # define deconvolution kernel
             t_kdec = ll.KernelDeconv(
                 temp_df2[var_dates["var_dates"][mindate] + ["undetermined"]],
                 temp_df2["frac"],
@@ -242,7 +247,11 @@ def _deconvolute_bootstrap(
                 confint=confint(**confint_params),
                 **weights,
             )
-            t_kdec = t_kdec.deconv_all(**deconv_params)
+            # limit the number of threads, to prevent oversubscription on blas / cluster systmes
+            with controller.limit(limits=1, user_api="blas"):
+                # do the deconvolution
+                t_kdec = t_kdec.deconv_all(**deconv_params)
+
             if have_confint:
                 # with conf int
                 res = t_kdec.fitted.copy()
