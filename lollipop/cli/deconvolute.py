@@ -157,10 +157,32 @@ def _deconvolute_bootstrap_wrapper(
     # Initialize the default random number generator with the child seed
     np.random.default_rng(child_seed)
 
-    return _deconvolute_bootstrap(args)
+    # Unpack the arguments
+    return _deconvolute_bootstrap(**args)
 
 
-def _deconvolute_bootstrap(args: DeconvBootstrapsArgsNoSeed) -> List[pd.DataFrame]:
+def _deconvolute_bootstrap(
+    n_cores: int,
+    par_bar: int,
+    location: str,
+    loc_df: pd.DataFrame,
+    bootstrap: int,
+    locations_list: List,
+    no_loc: bool,
+    no_date: bool,
+    date_intervals: List[Tuple],
+    var_dates: dict,
+    kernel: Union[ll.GaussianKernel, ll.BoxKernel],
+    kernel_params: dict,
+    regressor: Union[ll.NnlsReg, ll.RobustReg],
+    regressor_params: dict,
+    confint: Union[ll.confints.NullConfint, ll.confints.WaldConfint],
+    confint_params: dict,
+    deconv_params: dict,
+    have_confint: bool,
+    confint_name: str,
+    namefield: str,
+) -> List[pd.DataFrame]:
     """
     Deconvolute the data for a given location and bootstrap iteration.
 
@@ -174,28 +196,6 @@ def _deconvolute_bootstrap(args: DeconvBootstrapsArgsNoSeed) -> List[pd.DataFram
     List[pd.DataFrame]
         The deconvolution results for the location and bootstrap iterations.
     """
-
-    # Unpack the arguments
-    n_cores = args["n_cores"]
-    par_bar = args["par_bar"]
-    location = args["location"]
-    loc_df = args["loc_df"]
-    bootstrap = args["bootstrap"]
-    locations_list = args["locations_list"]
-    no_loc = args["no_loc"]
-    no_date = args["no_date"]
-    date_intervals = args["date_intervals"]
-    var_dates = args["var_dates"]
-    kernel = args["kernel"]
-    kernel_params = args["kernel_params"]
-    regressor = args["regressor"]
-    regressor_params = args["regressor_params"]
-    confint = args["confint"]
-    confint_params = args["confint_params"]
-    deconv_params = args["deconv_params"]
-    have_confint = args["have_confint"]
-    confint_name = args["confint_name"]
-    namefield = args["namefield"]
 
     # monitor the number of threads, to prevent oversubscription on blas / cluster systmes
     controller = ThreadpoolController()
