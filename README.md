@@ -485,6 +485,7 @@ Long term goal:
 
 - [David Dreifuss ![orcid]](https://orcid.org/0000-0002-5827-5387), [![github]](https://github.com/dr-david)
 - [Ivan Topolsky ![orcid]](https://orcid.org/0000-0002-7561-0810), [![github]](https://github.com/dryak)
+- [Gordon Koehn ![orcid]](https://orcid.org/0000-0003-3397-7769), [![github]](https://github.com/gordonkoehn)
 - [Pelin Icer Baykal ![orcid]](https://orcid.org/0000-0002-9542-5292), [![github]](https://github.com/picerbaykal)
 - [Mateo Carrara ![orcid]](	https://orcid.org/0000-0002-8559-8296), [![github]](https://github.com/mcarrara-bioinfo)
 
