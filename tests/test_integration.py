@@ -32,10 +32,10 @@ def test_workflow_multiple_locs():
     )
 
 
-def test_workflow_one_loc():
+def test_workflow_one_loc_two_cores():
     """
     Tests workflow with only one location,
-    and with only one core.
+    and with only two cores.
     """
     # data: its handled with LFS
 
@@ -62,7 +62,7 @@ def test_workflow_one_loc():
     )
 
 
-def test_workflow_one_loc():
+def test_workflow_one_loc_one_core():
     """
     Tests workflow with only one location,
     and with only one core.
