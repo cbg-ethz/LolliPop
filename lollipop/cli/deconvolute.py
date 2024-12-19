@@ -466,7 +466,9 @@ def deconvolute(
     # Configure logging – "click" requires special handling for logging here
     logger.setLevel(log_level)
     handler = logging.StreamHandler(sys.stderr)
-    handler.setFormatter(logging.Formatter(fmt=' %(name)s :: %(levelname)s :: %(message)s'))
+    handler.setFormatter(
+        logging.Formatter(fmt=" %(name)s :: %(levelname)s :: %(message)s")
+    )
     handler.setLevel(log_level)
     logger.addHandler(handler)
 
@@ -552,9 +554,7 @@ def deconvolute(
         sys.exit(1)
     # check if there are more cores than locations
     if n_cores > len(locations_list):
-        logger.warning(
-            "The number of cores is greater than the number of locations."
-        )
+        logger.warning("The number of cores is greater than the number of locations.")
         # adjust the number of cores to the number of locations
         n_cores = len(loc)
         logger.warning(f"The number of cores has been adjusted to {n_cores}.")
