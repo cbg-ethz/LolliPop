@@ -18,11 +18,9 @@ from threadpoolctl import ThreadpoolController
 
 import lollipop as ll
 
-# Configure logging
-logging.basicConfig(
-    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
+# Set up logging
+logger = logging.getLogger(__name__)
+log_level = logging.WARNING
 
 kernels = {
     "gaussian": ll.GaussianKernel,
@@ -199,7 +197,7 @@ def _deconvolute_bootstrap(
 
     # monitor the number of threads, to prevent oversubscription on blas / cluster systmes
     controller = ThreadpoolController()
-    logging.info(f"Threading configuration:\n {controller.info()}")
+    logger.info(f"Threading configuration:\n {controller.info()}")
 
     # deconvolution results
     deconv = []
@@ -208,7 +206,7 @@ def _deconvolute_bootstrap(
         tqdm.write(location)
 
     # print the memory usage of the current location
-    logging.info(f"memory usage: {loc_df.memory_usage().sum() / 1024**2} MB")
+    logger.info(f"memory usage: {loc_df.memory_usage().sum() / 1024**2} MB")
 
     workerid = None
     if n_cores != 1:
@@ -235,7 +233,7 @@ def _deconvolute_bootstrap(
         # No bootstrapping
         else [0]
     ):
-        logging.info(f"bootstrap: {b}")
+        logger.info(f"bootstrap: {b}")
         start_time_b = time.time()
         if bootstrap > 1:
             if n_cores > 1 and par_bar == 0:
@@ -259,7 +257,7 @@ def _deconvolute_bootstrap(
             if bootstrap <= 1 and len(date_intervals) > 1
             else date_intervals
         ):
-            logging.info(f"date: {mindate} - {maxdate}")
+            logger.info(f"date: {mindate} - {maxdate}")
             start_time_d = time.time()
             if not no_date:
                 # filter by time period for period-specific variants list
@@ -328,8 +326,8 @@ def _deconvolute_bootstrap(
                 res = t_kdec.fitted
                 res["location"] = location
                 deconv.append(res)
-            logging.info(f"date took {time.time() - start_time_d} seconds")
-        logging.info(f"bootstrap took {time.time() - start_time_b} seconds")
+            logger.info(f"date took {time.time() - start_time_d} seconds")
+        logger.info(f"bootstrap took {time.time() - start_time_b} seconds")
 
     return deconv
 
@@ -463,6 +461,15 @@ def deconvolute(
     tally_data,
     namefield,
 ):
+    print("=== Starting Variant Deconvolution ===")
+
+    # Configure logging – "click" requires special handling for logging here
+    logger.setLevel(log_level)
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(logging.Formatter(fmt=' %(name)s :: %(levelname)s :: %(message)s'))
+    handler.setLevel(log_level)
+    logger.addHandler(handler)
+
     # load data
     yaml = ruamel.yaml.YAML(typ="rt")
     print("load data")
@@ -539,21 +546,21 @@ def deconvolute(
         df_tally["location"] = "location"
         locations_list = ["location"]
 
-        # check if the number of cores is valid
-        if n_cores < 1:
-            logging.ERROR("The number of cores must be at least 1.")
-            sys.exit(1)
-        # check if there are more cores than locations
-        if n_cores > len(locations_list):
-            logging.warning(
-                "The number of cores is greater than the number of locations."
-            )
-            # adjust the number of cores to the number of locations
-            n_cores = len(loc)
-            logging.warning(f"The number of cores has been adjusted to {n_cores}.")
+    # check if the number of cores is valid
+    if n_cores < 1:
+        logger.ERROR("The number of cores must be at least 1.")
+        sys.exit(1)
+    # check if there are more cores than locations
+    if n_cores > len(locations_list):
+        logger.warning(
+            "The number of cores is greater than the number of locations."
+        )
+        # adjust the number of cores to the number of locations
+        n_cores = len(loc)
+        logger.warning(f"The number of cores has been adjusted to {n_cores}.")
 
-        # inform on the mode of computation
-        print("Available cores (parrallelized by locations): ", n_cores)
+    # inform on the mode of computation
+    print("Available cores (parrallelized by locations): ", n_cores)
 
     if locations_list is None:
         # remember to remove empty cells: nan or empty cells
@@ -717,16 +724,16 @@ def deconvolute(
     )
 
     # print out the iterations that will be done
-    logging.info(f"locations: {locations_list}")
-    logging.info(f"bootstrap: {bootstrap}")
-    logging.info(f"date_intervals: {date_intervals}")
+    logger.info(f"locations: {locations_list}")
+    logger.info(f"bootstrap: {bootstrap}")
+    logger.info(f"date_intervals: {date_intervals}")
 
     # starting computation
-    logging.info("starting computation")
+    logger.info("starting computation")
     # start a timer
     start_time = time.time()
     # print the memory usage of the dataframe
-    logging.info(f"memory usage: {df_tally.memory_usage().sum() / 1024**2} MB")
+    logger.info(f"memory usage: {df_tally.memory_usage().sum() / 1024**2} MB")
 
     # get the location specific data frames
     loc_dfs = [
@@ -792,7 +799,7 @@ def deconvolute(
             )
             # Update the progress bar after each item is processed
 
-    logging.info(f"all locations took {time.time() - start_time} seconds")
+    logger.info(f"all locations took {time.time() - start_time} seconds")
 
     print("post-process data")
     # Flatten the results from pot. parrallel processing
