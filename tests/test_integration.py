@@ -34,7 +34,7 @@ def test_workflow_multiple_locs():
 
 def test_workflow_one_loc():
     """
-    Tests workflow with only one location, 
+    Tests workflow with only one location,
     and with only one core.
     """
     # data: its handled with LFS
@@ -60,6 +60,7 @@ def test_workflow_one_loc():
             "preprint/data/tallymut_line_full.tsv.zst",
         ]
     )
+
 
 def test_workflow_one_loc():
     """
