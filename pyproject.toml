@@ -29,8 +29,8 @@ threadpoolctl = "^3.5.0"
 cli = [ "zstandard", "ruamel.yaml", "strictyaml", "tqdm", "click", "click-option-group" ]
 
 [tool.poetry.scripts]
-lollipop = { callable = "lollipop.cli:cli", extras = ["cli"] }
-deconvolute =  { callable = "lollipop.deconvolute:deconvolute", extras = ["cli"] }
+lollipop = "lollipop.cli:cli"
+deconvolute = "lollipop.deconvolute:deconvolute"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
