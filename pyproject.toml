@@ -2,7 +2,7 @@
 name = "lollipop"
 version = "0.0.0"
 description = "tool for Deconvolution for Wastewater Genomics"
-authors = ["David Dreifuss <dadreifuss@gmail.com>", "Ivan Blagoev Topolsky <ivan.topolsky@bsse.ethz.ch>", "Matteo Carrara <carrara@nexus.ethz.ch>"]
+authors = ["David Dreifuss <dadreifuss@gmail.com>", "Ivan Blagoev Topolsky <ivan.topolsky@bsse.ethz.ch>", "Matteo Carrara <carrara@nexus.ethz.ch>", "Gordon Koehn <gordon.koehn@dbsse.ethz.ch>"]
 maintainers = ["Ivan Blagoev Topolsky <ivan.topolsky@bsse.ethz.ch>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
