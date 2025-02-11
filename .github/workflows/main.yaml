@@ -37,6 +37,8 @@ jobs:
         run: |
           poetry install --extras "cli"
           poetry build
+          poetry run lollipop --help
+          poetry run lollipop deconvolute --help
 
       - name: Test package
         run: |
