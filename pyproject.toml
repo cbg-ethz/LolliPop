@@ -32,7 +32,7 @@ cli = [ "zstandard", "ruamel.yaml", "strictyaml", "tqdm", "click", "click-option
 lollipop = { callable = "lollipop.cli:cli", extras = ["cli"] }
 deconvolute =  { callable = "lollipop.deconvolute:deconvolute", extras = ["cli"] }
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
 pytest = "^6.2.1"
 
