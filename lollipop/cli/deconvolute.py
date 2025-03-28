@@ -553,11 +553,14 @@ def deconvolute(
         logger.ERROR("The number of cores must be at least 1.")
         sys.exit(1)
     # check if there are more cores than locations
-    if n_cores > len(locations_list):
-        logger.warning("The number of cores is greater than the number of locations.")
-        # adjust the number of cores to the number of locations
-        n_cores = len(loc)
-        logger.warning(f"The number of cores has been adjusted to {n_cores}.")
+    if locations_list is not None:
+        if n_cores > len(locations_list):
+            logger.warning(
+                "The number of cores is greater than the number of locations."
+            )
+            # adjust the number of cores to the number of locations
+            n_cores = len(loc)
+            logger.warning(f"The number of cores has been adjusted to {n_cores}.")
 
     # inform on the mode of computation
     print("Available cores (parrallelized by locations): ", n_cores)

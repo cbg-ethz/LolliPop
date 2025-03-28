@@ -93,3 +93,30 @@ def test_workflow_one_loc_one_core():
             "preprint/data/tallymut_line_full.tsv.zst",
         ]
     )
+
+
+def test_workflow_no_loc():
+    """
+    Tests workflow with no location
+    given.
+    """
+    # data: its handled with LFS
+
+    # dummy run
+    subprocess.check_call(["lollipop", "--version"])
+
+    # do fast test from preprint
+    subprocess.check_call(
+        [
+            "lollipop",
+            "deconvolute",
+            "--n-cores=1",
+            "--output=test_results_oneloc.csv",
+            "--out-json=test_results_oneloc.json",
+            "--variants-config=config_preprint.yaml",
+            "--variants-dates=tests/test_var_dates.yaml",  # only the last month
+            "--deconv-config=presets/deconv_linear.yaml",
+            "--seed=42",
+            "preprint/data/tallymut_line_full.tsv.zst",
+        ]
+    )
