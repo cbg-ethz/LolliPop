@@ -225,6 +225,10 @@ xsv cat rows --output tallymut.tsv sample*.mut.tsv
 > - If you have not tagged each individual sample with `--location` and `--date`, now it would be a good time to add extra columns to _tallymut.tsv_, e.g., with a _join_ operation.
 > - Note that this file can get quite huge. It is possible to compress it on the fly: `… | xsv fmt --out-delimiter '\t' | gzip -o tallymut.tsv.gz`
 
+> Note: The `xsv` utility is not included with LolliPop. You can install it separately using either of the following methods:
+> - With Homebrew: `brew install xsv`
+> - With conda: `conda install -c conda-forge xsv`
+
 ### Run the deconvolution
 
 The deconvolution can now be run on this table
