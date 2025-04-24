@@ -475,6 +475,15 @@ poetry-dynamic-versioning
 poetry install --extras "cli"
 ```
 
+For development install all with:
+
+```sh
+poetry install --with dev --extras "cli"
+poetry run pre-commit install
+```
+
+This will ensure you have all tools needed for development, including the pre-commit hook for automatic code formatting with black.
+
 ## Upcoming features
 
 - [ ] Support VCFs and coverage TSV as alternative to basecount TSV
