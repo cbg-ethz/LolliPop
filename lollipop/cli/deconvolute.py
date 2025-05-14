@@ -517,16 +517,16 @@ def deconvolute(
         if "location_code" in df_tally.columns:
             print("NOTE: No location fullnames, using codes instead")
             df_tally["location"] = df_tally["location_code"]
-        elif len(locations_list) == 1:
-            print(
-                "WARNING: No location in input data, assuming everything is {locations_list[0]}"
-            )
-            df_tally["location"] = locations_list[0]
         elif locations_list is None:
             print(
                 f"WARNING: No location in input data. Either pass one with `--loc`/`locations_list` parameter  or set true the `no_loc` parameter {variants_config}"
             )
             no_loc = True
+        elif len(locations_list) == 1:
+            print(
+                f"WARNING: No location in input data, assuming everything is {locations_list[0]}"
+            )
+            df_tally["location"] = locations_list[0]
         else:
             print(
                 f"ERROR: No location in input data. Either pass exactly one with `--loc`/`locations_list` parameter or set true the `no_loc` parameter {variants_config}"

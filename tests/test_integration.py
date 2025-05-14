@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import PurePath
 
 
 def test_workflow_multiple_locs():
@@ -118,5 +119,30 @@ def test_workflow_no_loc():
             "--deconv-config=presets/deconv_linear.yaml",
             "--seed=42",
             "preprint/data/tallymut_line_full.tsv.zst",
+        ]
+    )
+
+
+def test_workflow_auto_no_loc():
+    """
+    Tests workflow to autodetect no_loc.
+    """
+
+    datapath = PurePath("tests/test_auto_no_loc")
+
+    # do fast test from preprint
+    subprocess.check_call(
+        [
+            "lollipop",
+            "deconvolute",
+            "--n-cores=1",
+            "--output=test_results_auto_no_loc.csv",
+            "--out-json=test_results_auto_no_loc.json",
+            "--variants-config",
+            datapath / "config.yaml",
+            "--namefield=mutation",
+            "--deconv-config=presets/deconv_linear.yaml",
+            "--seed=42",
+            datapath / "tallymut.tsv",
         ]
     )

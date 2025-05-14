@@ -1,0 +1,27 @@
+# variants_list:
+#   - KP.3
+#   - KP.2
+#   - LP.8
+
+variants_pangolin:
+  "KP.3": KP.3
+  "KP.2": KP.2
+  "LP.8": LP.8
+
+#start_date: '2021-01-01'
+#end_date: '2021-09-01'
+
+#to_drop:
+# - subset
+# - revert
+
+# cities_list:
+#  - "Lugano (TI)"
+#  - "Zürich (ZH)"
+#  - "Chur (GR)"
+#  - "Altenrhein (SG)"
+#  - "Laupen (BE)"
+# # - "Genève (GE)"
+# # - "Basel (catchment area ARA Basel)"
+#  - "Lausanne (VD)"
+# # - "Kanton Zürich"
