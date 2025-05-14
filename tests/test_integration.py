@@ -2,15 +2,21 @@ import subprocess
 from pathlib import PurePath
 
 
+def test_dummy_run():
+    """
+    Does it even load and run?
+    """
+
+    # dummy run
+    subprocess.check_call(["lollipop", "--version"])
+
+
 def test_workflow_multiple_locs():
     """
     Tests workflow with multiple locations,
     and with multiple cores.
     """
     # data: its handled with LFS
-
-    # dummy run
-    subprocess.check_call(["lollipop", "--version"])
 
     # do fast test from preprint
     subprocess.check_call(
@@ -41,9 +47,6 @@ def test_workflow_one_loc_two_cores():
     """
     # data: its handled with LFS
 
-    # dummy run
-    subprocess.check_call(["lollipop", "--version"])
-
     # do fast test from preprint
     subprocess.check_call(
         [
@@ -72,9 +75,6 @@ def test_workflow_one_loc_one_core():
     """
     # data: its handled with LFS
 
-    # dummy run
-    subprocess.check_call(["lollipop", "--version"])
-
     # do fast test from preprint
     subprocess.check_call(
         [
@@ -102,9 +102,6 @@ def test_workflow_no_loc():
     given.
     """
     # data: its handled with LFS
-
-    # dummy run
-    subprocess.check_call(["lollipop", "--version"])
 
     # do fast test from preprint
     subprocess.check_call(
