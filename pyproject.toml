@@ -34,7 +34,7 @@ deconvolute = "lollipop.deconvolute:deconvolute"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
-pytest = "^6.2.1"
+pytest = "^8.3.5"
 pre-commit = "^3.7.0"
 
 [build-system]
