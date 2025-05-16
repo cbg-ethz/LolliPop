@@ -35,7 +35,7 @@ deconvolute = "lollipop.deconvolute:deconvolute"
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
 pytest = "^8.3.5"
-pre-commit = "^3.7.0"
+pre-commit = "^4.2.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
