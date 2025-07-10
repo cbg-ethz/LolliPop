@@ -44,7 +44,7 @@ class KernelDeconv:
         self.reg = reg
         self.confint = confint
         self.variant_names = X.columns
-        
+
         # Initialize RNG - use provided generator or create a new one
         if rng is not None:
             self.rng = rng
