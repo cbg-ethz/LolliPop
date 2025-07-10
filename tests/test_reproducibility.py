@@ -26,15 +26,11 @@ def test_reproducibility():
     1. Random number seeding works correctly when processing multiple locations in parallel
     2. Each location's results are reproducible across runs with the same seed
     3. Multi-location deconvolution maintains deterministic behavior
-    4. Parallel processing doesn't introduce race conditions in random number generation
+    4. Parallel processing doesn't works with random number generation
     
     Uses the full preprint dataset with multiple Swiss cities to test complex
     scenarios where deconvolution processes multiple locations simultaneously.
     """
-    # Create debug directory for inspection
-    debug_dir = Path("tests/test_reproducibility/debug")
-    debug_dir.mkdir(parents=True, exist_ok=True)
-    
     temp_dir = tempfile.mkdtemp()
     try:
         # Use the compressed LFS file directly from preprint/data
@@ -45,19 +41,20 @@ def test_reproducibility():
         if not os.path.exists(test_data_path):
             pytest.skip("Test data not available")
         
-        # Run 2 times with same seed to verify seeding works with multiple locations
+        # Run 10 times with same seed to verify seeding works with multiple locations
+        n_runs = 10
         outputs = []
-        for i in range(2):
+        for i in range(n_runs):
             output_csv = os.path.join(temp_dir, f"multilocations_test_{i}.csv")
             cmd = [
                 "lollipop", "deconvolute",
-                "--n-cores", "1",  # Force single core to ensure deterministic ordering
+                "--n-cores", "3",  
                 "--output", output_csv,
                 "--variants-config", config_path,
                 "--namefield", "mutation",
                 "--deconv-config", deconv_config,
-                # Locations are now specified in config.yaml via locations_list
-                "--seed", "123",  # Different seed from numerical test
+                # 3 Locations are specified in config.yaml via locations_list
+                "--seed", "123", 
                 test_data_path
             ]
             subprocess.check_call(cmd)
@@ -66,19 +63,16 @@ def test_reproducibility():
         # Compare outputs for exact equality across all locations
         df_first = pd.read_csv(outputs[0], sep='\t')
 
-        for i in range(1, 2):
+        for i in range(1, n_runs):
             df_next = pd.read_csv(outputs[i], sep='\t')
             try:
+                pd.set_option('display.float_format', lambda x: '%.20f' % x)
                 pd.testing.assert_frame_equal(df_first, df_next, check_exact=True)
             except AssertionError as e:
                 print(f"Multi-location seeding difference found between run 0 and run {i}:")
-                print(df_first.compare(df_next))
-                # Save debug files to persistent location for inspection
-                df_first.to_csv(debug_dir / "df_first_debug.csv", index=False)
-                df_next.to_csv(debug_dir / f"df_next_{i}_debug.csv", index=False)
-                print(f"Debug files saved to: {debug_dir}")
+                print(df_first.compare(df_next, align_axis=0))
                 raise AssertionError(f"Multi-location seeding reproducibility failed: {e}")
+    except subprocess.CalledProcessError as e:
+        pytest.fail(f"Deconvolution command failed: {e}")
     finally:
-        print(f"Temporary directory was: {temp_dir}")
-        print(f"Debug files (if any) saved to: {debug_dir}")
-        # shutil.rmtree(temp_dir, ignore_errors=True)
+        shutil.rmtree(temp_dir, ignore_errors=True)
