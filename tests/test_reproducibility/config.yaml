@@ -10,11 +10,10 @@ variants_pangolin:
 
 # Restrict to specific time period for consistent testing
 start_date: '2022-01-01'
-end_date: '2022-02-28'
+end_date: '2022-01-28'
 
 # Multiple locations to test seeding across parallel processing
 locations_list:
   - "Zürich (ZH)"
   - "Lugano (TI)"
   - "Lausanne (VD)"
-  - "Genève (GE)"
