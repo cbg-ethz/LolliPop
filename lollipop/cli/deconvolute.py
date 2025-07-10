@@ -127,13 +127,12 @@ class DeconvBootstrapsArgs(TypedDict):
     have_confint: bool
     confint_name: str
     namefield: str
-    child_seed: np.random.Generator
     rng: np.random.Generator
 
 
 def _deconvolute_bootstrap_wrapper(
     args: DeconvBootstrapsArgs,
-) -> Callable[[DeconvBootstrapsArgs], List[pd.DataFrame]]:
+) -> List[pd.DataFrame]:
     """
     Wrapper for the deconvolute bootstrap function to allow for parallel processing,
     handling the random number generator seeding.
@@ -518,7 +517,7 @@ def deconvolute(
 
     if no_loc:
         if "location" in df_tally:
-            locations_list = list(set(df_tally["location"].unique()) - {"", np.nan})
+            locations_list = sorted(list(set(df_tally["location"].unique()) - {"", np.nan}))
             if len(locations_list):
                 print(
                     f"WARNING: no_loc is set, but there are still locations in input: {locations_list}"
@@ -550,7 +549,7 @@ def deconvolute(
 
     if locations_list is None:
         # remember to remove empty cells: nan or empty cells
-        locations_list = list(set(df_tally["location"].unique()) - {"", np.nan})
+        locations_list = sorted(list(set(df_tally["location"].unique()) - {"", np.nan}))
         print(locations_list)
     else:
         bad_locations = set(locations_list) - set(df_tally["location"].unique())
@@ -599,10 +598,10 @@ def deconvolute(
 
         if variants_list is None:
             # build list of all variants from var_dates (if we did lack one)
-            variants_list = list(all_var_dates)
+            variants_list = sorted(list(all_var_dates))
         else:
             # have list => double - check it against var_dates
-            not_on_date = list(set(variants_list) - all_var_dates)
+            not_on_date = sorted(list(set(variants_list) - all_var_dates))
             if len(not_on_date):
                 print(
                     f"NOTE: {not_on_date} never used in {variants_dates}, despite being in variants_list"
@@ -612,11 +611,11 @@ def deconvolute(
                 print(
                     f"WARNING: {variants_dates} lists variants: {not_on_list}, but they are not in variants_list"
                 )
-                variants_list += not_on_list
+                variants_list += sorted(not_on_list)
     else:
         if variants_list is None:
             # build list of all variants from lineage map (if we did lack one)
-            variants_list = list(set(variants_pangolin.values()))
+            variants_list = sorted(list(set(variants_pangolin.values())))
 
         if no_date:
             # dummy date
@@ -669,7 +668,9 @@ def deconvolute(
         n_seeds = len(locations_list) + 1
 
     seed_seq = np.random.SeedSequence(seed)
-    child_rngs = seed_seq.spawn(n_seeds)
+    child_seed_seqs = seed_seq.spawn(n_seeds)
+    # Convert SeedSequence objects to Generator objects
+    child_rngs = [np.random.default_rng(seed_seq) for seed_seq in child_seed_seqs]
 
     all_deconv = []
     # TODO parameters sanitation (e.g.: JSON schema, check in list)
@@ -804,7 +805,7 @@ def deconvolute(
         id_vars += ["estimate"]
 
     # variants actually in dataframe
-    found_var = list(set(variants_list) & set(deconv_df.columns))
+    found_var = sorted(list(set(variants_list) & set(deconv_df.columns)))
     if len(found_var) < len(variants_list):
         print(
             f"some variants never found in dataset {set(variants_list) - set(found_var)}. Check the dates in {variants_dates}",
