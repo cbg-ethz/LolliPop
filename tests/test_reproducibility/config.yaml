@@ -1,0 +1,20 @@
+# Configuration for testing seeding consistency across multiple locations
+# Tests that random number seeding works correctly when processing multiple locations
+# Uses the same variants as numerical accuracy test but with multiple locations
+
+variants_pangolin:
+  "BA.1": om1
+  "BA.2": om2
+  "BA.4": om4
+  "BA.5": om5
+
+# Restrict to specific time period for consistent testing
+start_date: '2022-01-01'
+end_date: '2022-02-28'
+
+# Multiple locations to test seeding across parallel processing
+locations_list:
+  - "Zürich (ZH)"
+  - "Lugano (TI)"
+  - "Lausanne (VD)"
+  - "Genève (GE)"
