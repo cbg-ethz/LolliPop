@@ -910,7 +910,7 @@ def deconvolute(
             .pivot(
                 index=["location", "date"],
                 columns="variant",
-                values=list(set(export_columns.values()) - {"date"}),
+                values=sorted(list(set(export_columns.values()) - {"date"})),
             )
             .reset_index()
         )
@@ -947,9 +947,9 @@ def deconvolute(
         loc_uniq = deconv_df_agg["location"].unique()
         var_uniq = deconv_df_agg["variant"].unique()
 
-        json_columns = export_columns.values()
+        json_columns = sorted(list(export_columns.values()))
         if no_date:
-            json_columns = list(set(json_columns) - {"date"})
+            json_columns = sorted(list(set(json_columns) - {"date"}))
         for loc in tqdm(loc_uniq, desc="Location", position=0):
             update_data[loc] = {}
             for var in tqdm(var_uniq, desc=loc, position=1, leave=False):
