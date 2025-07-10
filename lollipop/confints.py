@@ -149,14 +149,29 @@ class WaldConfint:
             }
 
 
-def resample_mutations(df_city1, mutations, namefield="mutations"):
+def resample_mutations(df_city1, mutations, namefield="mutations", rng=None):
     """
     Function to resample mutations by replacement (preserving mutation-complement pairs).
     Returns a copy of the DataFrame with <resample_value> column indicating how many times the mutation was in the resample.
+    
+    Parameters
+    ----------
+    df_city1 : pd.DataFrame
+        The dataframe to resample
+    mutations : list
+        List of mutations
+    namefield : str
+        The column name containing mutation names
+    rng : np.random.Generator
+        Random number generator for reproducible results
     """
 
-    # resample indices of mutations with replacement (warning: high is one above actual high!
-    rand_idcs = np.random.randint(
+    # Use provided RNG or create a new one (not recommended for reproducibility)
+    if rng is None:
+        rng = np.random.default_rng()
+    
+    # resample indices of mutations with replacement (warning: high is one above actual high!)
+    rand_idcs = rng.integers(
         0, high=int(len(mutations) / 2), size=int(len(mutations) / 2)
     )
     # for all mutations, count how many times they appear in the resample (0, 1, 2 ...)

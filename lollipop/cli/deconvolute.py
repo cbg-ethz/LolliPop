@@ -59,7 +59,7 @@ def _get_location_data(
     return loc_df
 
 
-class DeconvBootstrapsArgsNoSeed(TypedDict):
+class DeconvBootstrapsArgs(TypedDict):
     """Arguments for the deconvolute bootstrap function.
         _deconvolute_bootstrap_
 
@@ -127,35 +127,17 @@ class DeconvBootstrapsArgsNoSeed(TypedDict):
     have_confint: bool
     confint_name: str
     namefield: str
-
-
-class DeconvBootstrapsArgs(DeconvBootstrapsArgsNoSeed):
-    """
-    Arguments for the deconvolute bootstrap function.
-        _deconvolute_bootstrap_wrapper_
-
-    child_seed: np.random.SeedSequence
-                    seed for the given location
-    """
-
-    child_seed: np.random.SeedSequence
+    child_seed: np.random.Generator
+    rng: np.random.Generator
 
 
 def _deconvolute_bootstrap_wrapper(
     args: DeconvBootstrapsArgs,
-) -> Callable[[DeconvBootstrapsArgsNoSeed], List[pd.DataFrame]]:
+) -> Callable[[DeconvBootstrapsArgs], List[pd.DataFrame]]:
     """
     Wrapper for the deconvolute bootstrap function to allow for parallel processing,
     handling the random number generator seeding.
     """
-
-    # Get the seed
-    child_seed = args.pop("child_seed")
-
-    # Initialize the default random number generator with the child seed
-    np.random.default_rng(child_seed)
-
-    # Unpack the arguments
     return _deconvolute_bootstrap(**args)
 
 
@@ -180,6 +162,7 @@ def _deconvolute_bootstrap(
     have_confint: bool,
     confint_name: str,
     namefield: str,
+    rng: np.random.Generator,
 ) -> List[pd.DataFrame]:
     """
     Deconvolute the data for a given location and bootstrap iteration.
@@ -246,7 +229,7 @@ def _deconvolute_bootstrap(
                 but no column '{namefield}' found. Use option '--namefield' to specify
                 """
             temp_dfb = ll.resample_mutations(
-                loc_df, loc_df[namefield].unique(), namefield
+                loc_df, loc_df[namefield].unique(), namefield, rng
             )[0]
         else:
             # just run one on everything
@@ -289,8 +272,7 @@ def _deconvolute_bootstrap(
             else:
                 # just run one on everything
                 weights = {}
-
-            # define deconvolution kernel
+            
             t_kdec = ll.KernelDeconv(
                 temp_df2[var_dates["var_dates"][mindate] + ["undetermined"]],
                 temp_df2["frac"],
@@ -298,6 +280,7 @@ def _deconvolute_bootstrap(
                 kernel=kernel(**kernel_params),
                 reg=regressor(**regressor_params),
                 confint=confint(**confint_params),
+                rng=rng,
                 **weights,
             )
             # limit the number of threads, to prevent oversubscription on blas / cluster systmes
@@ -686,7 +669,7 @@ def deconvolute(
         n_seeds = len(locations_list) + 1
 
     seed_seq = np.random.SeedSequence(seed)
-    seeds = seed_seq.spawn(n_seeds)
+    child_rngs = seed_seq.spawn(n_seeds)
 
     all_deconv = []
     # TODO parameters sanitation (e.g.: JSON schema, check in list)
@@ -771,9 +754,9 @@ def deconvolute(
             "have_confint": have_confint,
             "confint_name": confint_name,
             "namefield": namefield,
-            "child_seed": child_seed,
+            "rng": child_rng,
         }
-        for location, loc_df, child_seed in zip(locations_list, loc_dfs, seeds)
+        for location, loc_df, child_rng in zip(locations_list, loc_dfs, child_rngs)
     ]
 
     # Run the deconvoilution for a sinlge location or sequentially if only one core is available

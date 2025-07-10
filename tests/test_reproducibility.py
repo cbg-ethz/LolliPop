@@ -18,22 +18,20 @@ import pytest
 from pathlib import Path
 import shutil
 
-def test_reproducibility():
+def test_reproducibility_cowwid():
     """
-    Test correct seeding behavior with multiple locations processing.
+    Test reproducibility of deconvolution results under cowwid production settings.
     
     This test verifies that:
     1. Random number seeding works correctly when processing multiple locations in parallel
     2. Each location's results are reproducible across runs with the same seed
     3. Multi-location deconvolution maintains deterministic behavior
-    4. Parallel processing doesn't works with random number generation
+    4. Parallel processing does works with random number generation
     
     Uses the full preprint dataset with multiple Swiss cities to test complex
     scenarios where deconvolution processes multiple locations simultaneously.
     """
     temp_dir = tempfile.mkdtemp()
-    temp_dir = Path("tests/test_reproducibility/temp")
-    temp_dir.mkdir(parents=True, exist_ok=True)
     try:
         # Use the compressed LFS file directly from preprint/data
         test_data_path = "preprint/data/tallymut_line_full.tsv.zst"

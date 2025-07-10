@@ -21,6 +21,7 @@ class KernelDeconv:
         kernel=GaussianKernel(),
         reg=NnlsReg(),
         confint=WaldConfint(),
+        rng=None,
     ):
         """
         X (pd.DataFrame): dataframe of variant definition (design matrix)
@@ -30,6 +31,7 @@ class KernelDeconv:
         kernel (kernel object): object with methods to compute kernel weighting
         reg (regressor object): object with methods to compute the regression
         confint (confint object): object with method to compute confidence bands
+        rng (np.random.Generator): random number generator for reproducible results
         """
         self.X = X
         self.y = y
@@ -42,6 +44,12 @@ class KernelDeconv:
         self.reg = reg
         self.confint = confint
         self.variant_names = X.columns
+        
+        # Initialize RNG - use provided generator or create a new one
+        if rng is not None:
+            self.rng = rng
+        else:
+            self.rng = np.random.default_rng()
 
     def deconv(self, date, min_tol=1e-10, renormalize=True):
         """
