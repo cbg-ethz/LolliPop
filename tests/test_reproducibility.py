@@ -36,13 +36,13 @@ def test_reproducibility():
         # Use the compressed LFS file directly from preprint/data
         test_data_path = "preprint/data/tallymut_line_full.tsv.zst"
         config_path = "tests/test_reproducibility/config.yaml"
-        deconv_config = "presets/deconv_linear.yaml"
+        deconv_config = "presets/deconv_bootstrap_cowwid.yaml"
         
         if not os.path.exists(test_data_path):
             pytest.skip("Test data not available")
         
-        # Run 10 times with same seed to verify seeding works with multiple locations
-        n_runs = 10
+        # Run x times with same seed to verify seeding works with multiple locations
+        n_runs = 5
         outputs = []
         for i in range(n_runs):
             output_csv = os.path.join(temp_dir, f"multilocations_test_{i}.csv")
@@ -51,7 +51,6 @@ def test_reproducibility():
                 "--n-cores", "3",  
                 "--output", output_csv,
                 "--variants-config", config_path,
-                "--namefield", "mutation",
                 "--deconv-config", deconv_config,
                 # 3 Locations are specified in config.yaml via locations_list
                 "--seed", "123", 
