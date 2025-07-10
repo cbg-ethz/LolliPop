@@ -256,9 +256,9 @@ def _deconvolute_bootstrap(
                 continue
 
             # remove uninformative mutations (present either always or never)
-            variants_columns = list(
+            variants_columns = sorted(list(
                 set(var_dates["var_dates"][mindate]) & set(temp_df2.columns)
-            )
+            ))
             temp_df2 = temp_df2[
                 ~temp_df2[variants_columns].sum(axis=1).isin([0, len(variants_columns)])
             ]
@@ -606,7 +606,7 @@ def deconvolute(
                 print(
                     f"NOTE: {not_on_date} never used in {variants_dates}, despite being in variants_list"
                 )
-            not_on_list = list(all_var_dates - set(variants_list))
+            not_on_list = sorted(list(all_var_dates - set(variants_list)))
             if len(not_on_list):
                 print(
                     f"WARNING: {variants_dates} lists variants: {not_on_list}, but they are not in variants_list"
