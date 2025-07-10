@@ -738,6 +738,9 @@ def deconvolute(
     # print the memory usage of the dataframe
     logger.info(f"memory usage: {df_tally.memory_usage().sum() / 1024**2} MB")
 
+    # ensure reproducibility, by order of locations
+    locations_list = sorted(locations_list)
+
     # get the location specific data frames
     loc_dfs = [
         _get_location_data(preproc, location, no_loc) for location in locations_list
