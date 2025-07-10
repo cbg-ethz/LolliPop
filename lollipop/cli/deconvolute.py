@@ -884,6 +884,29 @@ def deconvolute(
         for col in deconv_df_agg.columns.values
     ]
     deconv_df_agg = deconv_df_agg.sort_values(by=["location", "variant", "date"])
+    
+    # Round to significant digits
+    def round_to_sig_figs(x, sig_figs):
+        """Round a number to a specified number of significant figures."""
+        if pd.isna(x) or x == 0 or abs(x) < 1e-15:
+            return 0.0 if abs(x) < 1e-15 else x
+        
+        try:
+            magnitude = int(np.floor(np.log10(abs(x))))
+            decimal_places = sig_figs - magnitude - 1
+            return 0.0 if decimal_places > 15 else np.round(x, decimal_places)
+        except (OverflowError, ValueError):
+            return 0.0
+    
+    # Apply rounding to specific columns
+    # Note: Choosing simple rounding her for presentable output , a rigerous scientific quoting with these intervals would results in 1 significant digit only.
+    if 'proportion' in deconv_df_agg.columns:
+        deconv_df_agg['proportion'] = deconv_df_agg['proportion'].apply(lambda x: round_to_sig_figs(x, 3))
+    if 'proportionLower' in deconv_df_agg.columns:
+        deconv_df_agg['proportionLower'] = deconv_df_agg['proportionLower'].apply(lambda x: round_to_sig_figs(x, 3))
+    if 'proportionUpper' in deconv_df_agg.columns:
+        deconv_df_agg['proportionUpper'] = deconv_df_agg['proportionUpper'].apply(lambda x: round_to_sig_figs(x, 3))
+    
     # reverse logit scale
     if have_confint and confint_params["scale"] == "logit":
         deconv_df_agg[["proportionLower", "proportionUpper"]] = deconv_df_agg[
@@ -961,7 +984,7 @@ def deconvolute(
             file.write(
                 json.dumps(update_data).replace("NaN", "null")
             )  # syntactically standard compliant JSON vs. python numpy's output.
-
+9
 
 if __name__ == "__main__":
     deconvolute()
