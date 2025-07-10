@@ -85,7 +85,7 @@ class DataPreprocesser:
 
         # delete lines with mutation of the type that we want to delete (to_drop)
         # e.g.: remove all 'subset' mutations
-        absentcol = set(variants_list) - set(self.df_tally.columns)
+        absentcol = sorted(list(set(variants_list) - set(self.df_tally.columns)))
         if len(absentcol):
             # check for missing
             print(
@@ -108,7 +108,7 @@ class DataPreprocesser:
         ).infer_objects(copy=False)
 
         # remove uninformative mutations
-        variants_columns = list(set(variants_list) & set(self.df_tally.columns))
+        variants_columns = sorted(list(set(variants_list) & set(self.df_tally.columns)))
         self.df_tally = self.df_tally[
             ~self.df_tally[variants_columns]
             .sum(axis=1)
