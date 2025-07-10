@@ -31,7 +31,7 @@ def test_reproducibility():
     Uses the full preprint dataset with multiple Swiss cities to test complex
     scenarios where deconvolution processes multiple locations simultaneously.
     """
-    #temp_dir = tempfile.mkdtemp()
+    temp_dir = tempfile.mkdtemp()
     temp_dir = Path("tests/test_reproducibility/temp")
     temp_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -105,5 +105,5 @@ def test_reproducibility():
                 raise AssertionError(f"Multi-location seeding reproducibility failed: {e}")
     except subprocess.CalledProcessError as e:
         pytest.fail(f"Deconvolution command failed: {e}")
-    #finally:
-    #    shutil.rmtree(temp_dir, ignore_errors=True)
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
