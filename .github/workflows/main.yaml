@@ -48,7 +48,7 @@ jobs:
         run: poetry run black --check --diff .
 
       - name: Archive test output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test_curves
           path: |
