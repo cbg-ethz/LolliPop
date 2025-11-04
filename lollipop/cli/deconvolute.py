@@ -59,7 +59,7 @@ def _get_location_data(
     return loc_df
 
 
-class DeconvBootstrapsArgsNoSeed(TypedDict):
+class DeconvBootstrapsArgs(TypedDict):
     """Arguments for the deconvolute bootstrap function.
         _deconvolute_bootstrap_
 
@@ -127,35 +127,16 @@ class DeconvBootstrapsArgsNoSeed(TypedDict):
     have_confint: bool
     confint_name: str
     namefield: str
-
-
-class DeconvBootstrapsArgs(DeconvBootstrapsArgsNoSeed):
-    """
-    Arguments for the deconvolute bootstrap function.
-        _deconvolute_bootstrap_wrapper_
-
-    child_seed: np.random.SeedSequence
-                    seed for the given location
-    """
-
-    child_seed: np.random.SeedSequence
+    rng: np.random.Generator
 
 
 def _deconvolute_bootstrap_wrapper(
     args: DeconvBootstrapsArgs,
-) -> Callable[[DeconvBootstrapsArgsNoSeed], List[pd.DataFrame]]:
+) -> List[pd.DataFrame]:
     """
     Wrapper for the deconvolute bootstrap function to allow for parallel processing,
     handling the random number generator seeding.
     """
-
-    # Get the seed
-    child_seed = args.pop("child_seed")
-
-    # Initialize the default random number generator with the child seed
-    np.random.default_rng(child_seed)
-
-    # Unpack the arguments
     return _deconvolute_bootstrap(**args)
 
 
@@ -180,6 +161,7 @@ def _deconvolute_bootstrap(
     have_confint: bool,
     confint_name: str,
     namefield: str,
+    rng: np.random.Generator,
 ) -> List[pd.DataFrame]:
     """
     Deconvolute the data for a given location and bootstrap iteration.
@@ -246,7 +228,7 @@ def _deconvolute_bootstrap(
                 but no column '{namefield}' found. Use option '--namefield' to specify
                 """
             temp_dfb = ll.resample_mutations(
-                loc_df, loc_df[namefield].unique(), namefield
+                loc_df, loc_df[namefield].unique(), namefield, rng
             )[0]
         else:
             # just run one on everything
@@ -274,8 +256,8 @@ def _deconvolute_bootstrap(
                 continue
 
             # remove uninformative mutations (present either always or never)
-            variants_columns = list(
-                set(var_dates["var_dates"][mindate]) & set(temp_df2.columns)
+            variants_columns = sorted(
+                list(set(var_dates["var_dates"][mindate]) & set(temp_df2.columns))
             )
             temp_df2 = temp_df2[
                 ~temp_df2[variants_columns].sum(axis=1).isin([0, len(variants_columns)])
@@ -290,7 +272,6 @@ def _deconvolute_bootstrap(
                 # just run one on everything
                 weights = {}
 
-            # define deconvolution kernel
             t_kdec = ll.KernelDeconv(
                 temp_df2[var_dates["var_dates"][mindate] + ["undetermined"]],
                 temp_df2["frac"],
@@ -298,6 +279,7 @@ def _deconvolute_bootstrap(
                 kernel=kernel(**kernel_params),
                 reg=regressor(**regressor_params),
                 confint=confint(**confint_params),
+                rng=rng,
                 **weights,
             )
             # limit the number of threads, to prevent oversubscription on blas / cluster systmes
@@ -535,7 +517,9 @@ def deconvolute(
 
     if no_loc:
         if "location" in df_tally:
-            locations_list = list(set(df_tally["location"].unique()) - {"", np.nan})
+            locations_list = sorted(
+                list(set(df_tally["location"].unique()) - {"", np.nan})
+            )
             if len(locations_list):
                 print(
                     f"WARNING: no_loc is set, but there are still locations in input: {locations_list}"
@@ -567,7 +551,7 @@ def deconvolute(
 
     if locations_list is None:
         # remember to remove empty cells: nan or empty cells
-        locations_list = list(set(df_tally["location"].unique()) - {"", np.nan})
+        locations_list = sorted(list(set(df_tally["location"].unique()) - {"", np.nan}))
         print(locations_list)
     else:
         bad_locations = set(locations_list) - set(df_tally["location"].unique())
@@ -616,24 +600,24 @@ def deconvolute(
 
         if variants_list is None:
             # build list of all variants from var_dates (if we did lack one)
-            variants_list = list(all_var_dates)
+            variants_list = sorted(list(all_var_dates))
         else:
             # have list => double - check it against var_dates
-            not_on_date = list(set(variants_list) - all_var_dates)
+            not_on_date = sorted(list(set(variants_list) - all_var_dates))
             if len(not_on_date):
                 print(
                     f"NOTE: {not_on_date} never used in {variants_dates}, despite being in variants_list"
                 )
-            not_on_list = list(all_var_dates - set(variants_list))
+            not_on_list = sorted(list(all_var_dates - set(variants_list)))
             if len(not_on_list):
                 print(
                     f"WARNING: {variants_dates} lists variants: {not_on_list}, but they are not in variants_list"
                 )
-                variants_list += not_on_list
+                variants_list += sorted(not_on_list)
     else:
         if variants_list is None:
             # build list of all variants from lineage map (if we did lack one)
-            variants_list = list(set(variants_pangolin.values()))
+            variants_list = sorted(list(set(variants_pangolin.values())))
 
         if no_date:
             # dummy date
@@ -686,7 +670,9 @@ def deconvolute(
         n_seeds = len(locations_list) + 1
 
     seed_seq = np.random.SeedSequence(seed)
-    seeds = seed_seq.spawn(n_seeds)
+    child_seed_seqs = seed_seq.spawn(n_seeds)
+    # Convert SeedSequence objects to Generator objects
+    child_rngs = [np.random.default_rng(seed_seq) for seed_seq in child_seed_seqs]
 
     all_deconv = []
     # TODO parameters sanitation (e.g.: JSON schema, check in list)
@@ -738,6 +724,9 @@ def deconvolute(
     # print the memory usage of the dataframe
     logger.info(f"memory usage: {df_tally.memory_usage().sum() / 1024**2} MB")
 
+    # ensure reproducibility, by order of locations
+    locations_list = sorted(locations_list)
+
     # get the location specific data frames
     loc_dfs = [
         _get_location_data(preproc, location, no_loc) for location in locations_list
@@ -768,9 +757,9 @@ def deconvolute(
             "have_confint": have_confint,
             "confint_name": confint_name,
             "namefield": namefield,
-            "child_seed": child_seed,
+            "rng": child_rng,
         }
-        for location, loc_df, child_seed in zip(locations_list, loc_dfs, seeds)
+        for location, loc_df, child_rng in zip(locations_list, loc_dfs, child_rngs)
     ]
 
     # Run the deconvoilution for a sinlge location or sequentially if only one core is available
@@ -818,7 +807,7 @@ def deconvolute(
         id_vars += ["estimate"]
 
     # variants actually in dataframe
-    found_var = list(set(variants_list) & set(deconv_df.columns))
+    found_var = sorted(list(set(variants_list) & set(deconv_df.columns)))
     if len(found_var) < len(variants_list):
         print(
             f"some variants never found in dataset {set(variants_list) - set(found_var)}. Check the dates in {variants_dates}",
@@ -884,6 +873,35 @@ def deconvolute(
         for col in deconv_df_agg.columns.values
     ]
     deconv_df_agg = deconv_df_agg.sort_values(by=["location", "variant", "date"])
+
+    # Round to significant digits
+    def round_to_sig_figs(x, sig_figs):
+        """Round a number to a specified number of significant figures."""
+        if pd.isna(x) or x == 0 or abs(x) < 1e-15:
+            return 0.0 if abs(x) < 1e-15 else x
+
+        try:
+            magnitude = int(np.floor(np.log10(abs(x))))
+            decimal_places = sig_figs - magnitude - 1
+            return 0.0 if decimal_places > 15 else np.round(x, decimal_places)
+        except (OverflowError, ValueError):
+            return 0.0
+
+    # Apply rounding to specific columns
+    # Note: Choosing simple rounding her for presentable output , a rigerous scientific quoting with these intervals would results in 1 significant digit only.
+    if "proportion" in deconv_df_agg.columns:
+        deconv_df_agg["proportion"] = deconv_df_agg["proportion"].apply(
+            lambda x: round_to_sig_figs(x, 4)
+        )
+    if "proportionLower" in deconv_df_agg.columns:
+        deconv_df_agg["proportionLower"] = deconv_df_agg["proportionLower"].apply(
+            lambda x: round_to_sig_figs(x, 4)
+        )
+    if "proportionUpper" in deconv_df_agg.columns:
+        deconv_df_agg["proportionUpper"] = deconv_df_agg["proportionUpper"].apply(
+            lambda x: round_to_sig_figs(x, 4)
+        )
+
     # reverse logit scale
     if have_confint and confint_params["scale"] == "logit":
         deconv_df_agg[["proportionLower", "proportionUpper"]] = deconv_df_agg[
@@ -900,7 +918,7 @@ def deconvolute(
             .pivot(
                 index=["location", "date"],
                 columns="variant",
-                values=list(set(export_columns.values()) - {"date"}),
+                values=sorted(list(set(export_columns.values()) - {"date"})),
             )
             .reset_index()
         )
@@ -937,9 +955,9 @@ def deconvolute(
         loc_uniq = deconv_df_agg["location"].unique()
         var_uniq = deconv_df_agg["variant"].unique()
 
-        json_columns = export_columns.values()
+        json_columns = sorted(list(export_columns.values()))
         if no_date:
-            json_columns = list(set(json_columns) - {"date"})
+            json_columns = sorted(list(set(json_columns) - {"date"}))
         for loc in tqdm(loc_uniq, desc="Location", position=0):
             update_data[loc] = {}
             for var in tqdm(var_uniq, desc=loc, position=1, leave=False):
@@ -962,6 +980,8 @@ def deconvolute(
                 json.dumps(update_data).replace("NaN", "null")
             )  # syntactically standard compliant JSON vs. python numpy's output.
 
+
+9
 
 if __name__ == "__main__":
     deconvolute()
