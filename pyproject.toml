@@ -33,7 +33,7 @@ lollipop = "lollipop.cli:cli"
 deconvolute = "lollipop.deconvolute:deconvolute"
 
 [tool.poetry.group.dev.dependencies]
-black = "^25.1.0"
+black = "^26.1.0"
 pytest = "^8.3.5"
 pre-commit = "^4.2.0"
 
