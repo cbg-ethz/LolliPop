@@ -51,6 +51,10 @@ class RobustReg:
         ls = least_squares(
             lambda beta: kX.dot(beta) - ky,
             b0,
+            # the residuals are linear in beta, so their Jacobian is kX itself; without
+            # it, least_squares estimates it by finite differences, one residual call per
+            # variant and iteration
+            jac=lambda beta: kX,
             bounds=(0, 1),
             loss=self.loss_type,
             f_scale=self.f_scale,
