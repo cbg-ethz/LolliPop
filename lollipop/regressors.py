@@ -44,9 +44,12 @@ class RobustReg:
         # make starting values
         if b0 is None:
             b0 = np.ones(X.shape[1]) / X.shape[1]
+        # pre-compute function constants (measurably improves performance)
+        kX = np.expand_dims(k, 1) * X
+        ky = k * y
         # regress
         ls = least_squares(
-            lambda beta: (np.expand_dims(k, 1) * X).dot(beta) - (k * y),
+            lambda beta: kX.dot(beta) - ky,
             b0,
             bounds=(0, 1),
             loss=self.loss_type,
