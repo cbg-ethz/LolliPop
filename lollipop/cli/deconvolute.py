@@ -239,9 +239,7 @@ def _deconvolute_bootstrap(
             if n_cores > 1 and par_bar == 0:
                 print(f"core{workerid}: {location} - {b}/{bootstrap}")
             # resample if we're doing bootstrapping
-            assert (
-                namefield in loc_df.columns
-            ), f"""
+            assert namefield in loc_df.columns, f"""
                 bootstrapping needs a column with names for the entries of the tally table,"
                 but no column '{namefield}' found. Use option '--namefield' to specify
                 """
@@ -711,8 +709,7 @@ def deconvolute(
     regressor_params = deconv.get("regressor_params", {})
     # deconv
     deconv_params = deconv.get("deconv_params", {})
-    print(
-        f""" parameters:
+    print(f""" parameters:
   bootstrap: {bootstrap}
   kernel: {kernel}
    params: {kernel_params}
@@ -723,8 +720,7 @@ def deconvolute(
   regressor: {regressor}
    params: {regressor_params}
   deconv:
-   params: {deconv_params}"""
-    )
+   params: {deconv_params}""")
 
     # print out the iterations that will be done
     logger.info(f"locations: {locations_list}")
