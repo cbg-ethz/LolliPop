@@ -342,6 +342,15 @@ def _deconvolute_bootstrap(
     help="Also write a JSON results for upload to Cov-spectrum, etc.",
 )
 @click.option(
+    "--round-sig",
+    "--rs",
+    metavar="SIG",
+    required=False,
+    default=4,
+    type=int,
+    help="Number of significant figures to which to round the columns 'proportion', 'proportionUpper', and 'proportionLower' (or set 0 to NOT round)",
+)
+@click.option(
     "--variants-config",
     "--var",
     "-c",
@@ -438,6 +447,7 @@ def deconvolute(
     output,
     fmt_columns,
     out_json,
+    round_sig,
     tally_data,
     namefield,
 ):
@@ -883,20 +893,21 @@ def deconvolute(
         except (OverflowError, ValueError):
             return 0.0
 
-    # Apply rounding to specific columns
-    # Note: Choosing simple rounding her for presentable output , a rigerous scientific quoting with these intervals would results in 1 significant digit only.
-    if "proportion" in deconv_df_agg.columns:
-        deconv_df_agg["proportion"] = deconv_df_agg["proportion"].apply(
-            lambda x: round_to_sig_figs(x, 4)
-        )
-    if "proportionLower" in deconv_df_agg.columns:
-        deconv_df_agg["proportionLower"] = deconv_df_agg["proportionLower"].apply(
-            lambda x: round_to_sig_figs(x, 4)
-        )
-    if "proportionUpper" in deconv_df_agg.columns:
-        deconv_df_agg["proportionUpper"] = deconv_df_agg["proportionUpper"].apply(
-            lambda x: round_to_sig_figs(x, 4)
-        )
+    if round_sig and round_sig >= 2:
+        # Apply rounding to specific columns
+        # Note: Choosing simple rounding her for presentable output, a rigerous scientific quoting with these intervals would results in 1 significant digit only.
+        if "proportion" in deconv_df_agg.columns:
+            deconv_df_agg["proportion"] = deconv_df_agg["proportion"].apply(
+                lambda x: round_to_sig_figs(x, round_sig)
+            )
+        if "proportionLower" in deconv_df_agg.columns:
+            deconv_df_agg["proportionLower"] = deconv_df_agg["proportionLower"].apply(
+                lambda x: round_to_sig_figs(x, round_sig)
+            )
+        if "proportionUpper" in deconv_df_agg.columns:
+            deconv_df_agg["proportionUpper"] = deconv_df_agg["proportionUpper"].apply(
+                lambda x: round_to_sig_figs(x, round_sig)
+            )
 
     # reverse logit scale
     if have_confint and confint_params["scale"] == "logit":
