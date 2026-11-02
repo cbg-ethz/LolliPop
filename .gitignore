@@ -5,3 +5,6 @@ test_results.*
 
 # Cache
 __pycache__
+
+# OSX
+.DS_Store
